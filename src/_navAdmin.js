@@ -15,7 +15,7 @@ export default {
         },
         {
             name: <Lang name="Menu Purchase Order" />,
-            url: '/admin/partners',
+            url: '/admin/purchaseOrder',
             icon: 'icon-list'
         }
     ]
