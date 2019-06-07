@@ -32,7 +32,8 @@ class PurchaseOrderAdd extends Component {
             unit: '',
             price: 0,
             discount: 0,
-            line_amount_total: 0
+            line_amount_total: 0,
+            incotermVersion: 'INCOTERMS ® 2010'
         }
       }
 
@@ -59,6 +60,11 @@ class PurchaseOrderAdd extends Component {
         this.setState({
             line_amount_total: (this.state.price * this.state.qty) - this.state.discount
         })
+    }
+
+    logChange = (e) => {
+        const {name, value} = e.target;
+        this.setState({[name]: value});
     }
 
     sumTotal = () => {
@@ -127,14 +133,16 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Supplier" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="supplier" value={this.state.supplier} onChange={e=>this.logChange(e)}  required >
+                                                <option value="">{this.state.Lang['--- select supplier ---']}</option>
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Order Date" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="date" name="pacName" required/>
+                                            <Input type="date" name="orderDate" value={this.state.orderDate} onChange={e=>this.logChange(e)} required/>
                                         
                                         </FormGroup>
                                         </Col>
@@ -144,14 +152,19 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Contact Person" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="text" name="contactPerson" value={this.state.contactPerson} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your contact person']} />
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Transport Type" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="transportType" value={this.state.transportType} onChange={e=>this.logChange(e)}  required>
+                                                <option value="">{this.state.Lang['--- select transport type ---']}</option>
+                                                <option value="BY SEA">BY SEA</option>
+                                                <option value="BY AIR">BY AIR</option>
+                                                <option value="BY COUIRER">BY COUIRER</option>
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
@@ -161,14 +174,26 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Payment Condition" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="paymentCondition" value={this.state.paymentCondition} onChange={e=>this.logChange(e)}  required >
+                                                <option value="">{this.state.Lang['--- select payment condition ---']}</option>
+                                                <option value="L/C">L/C</option>
+                                                <option value="TT">TT</option>
+                                                <option value="D/P">D/P</option>
+                                                <option value="CASH AGAINST DOCUMENTS">CASH AGAINST DOCUMENTS</option>
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Destination Port" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="destinationPort" value={this.state.destinationPort} onChange={e=>this.logChange(e)} required>
+                                                <option value="">{this.state.Lang['--- select destination port ---']}</option>
+                                                <option value="P.A.T Bangkok Thailand(Port Authority of Thailand)">P.A.T Bangkok Thailand(Port Authority of Thailand)</option>
+                                                <option value="Lat Krabang Port, Thailand">Lat Krabang Port, Thailand</option>
+                                                <option value="Bangkok, Thailand">Bangkok, Thailand</option>
+                                                <option value="SUWANNAPHUM AIRPORT">SUWANNAPHUM AIRPORT</option>
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
@@ -178,14 +203,36 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Payment Terms" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="paymentTerms" value={this.state.paymentTerms} onChange={e=>this.logChange(e)}  required >
+                                                <option value="">{this.state.Lang['--- select payment terms ---']}</option>
+                                                <option value="100% In Advance">100% In Advance</option>
+                                                <option value="In Advance/After received copy B/L 30%/70%">In Advance/After received copy B/L 30%/70%</option>
+                                                <option value="In Advance/After received copy B/L 50%/50%">In Advance/After received copy B/L 50%/50%</option>
+                                                <option value="3 days after received copy B/L">3 days after received copy B/L</option>
+                                                <option value="7 days after received copy B/L">7 days after received copy B/L</option>
+                                                <option value="30 days after received copy B/L">30 days after received copy B/L</option>
+                                                <option value="60 days after received copy B/L">60 days after received copy B/L</option>
+                                                <option value="3 days after B/L date">3 days after B/L date</option>
+                                                <option value="7 days after B/L date">7 days after B/L date</option>
+                                                <option value="30 days after B/L date">30 days after B/L date</option>
+                                                <option value="60 days after B/L date">60 days after B/L date</option>
+                                                <option value="At sight">At sight</option>
+                                                <option value="Against doc copy">Against doc copy</option>
+                                                <option value="30% down payment, within 7 days after received PO 70% final payment, 20 days prior shipment">30% down payment, within 7 days after received PO 70% final payment, 20 days prior shipment</option>
+                                                <option value="5 days after against B/L">5 days after against B/L</option>
+                                                <option value="100% IN ADVANCE 15 DAYS BEFORE THE SHIPMENT DATE.">100% IN ADVANCE 15 DAYS BEFORE THE SHIPMENT DATE.</option>
+                                                <option value="15 days from BL date">15 days from BL date</option>
+                                                <option value="In Advance/After FAT/After SAT 40%/50%/10%">In Advance/After FAT/After SAT 40%/50%/10%</option>
+                                                <option value="90 days after B/L date">90 days after B/L date</option>
+                                                
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Incoterm Version" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="text" name="incotermVersion" value={this.state.incotermVersion} onChange={e=>this.logChange(e)}/>
                                         
                                         </FormGroup>
                                         </Col>
@@ -195,31 +242,36 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Currency Unit" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="currency" value={this.state.currency} onChange={e=>this.logChange(e)}  required >
+                                                <option value="THB">THB</option>
+                                                <option value="USD">USD</option>
+                                                <option value="EUR">EUR</option>
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Incoterms" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
-                                        
-                                        </FormGroup>
-                                        </Col>
-                                        
-                                    </FormGroup>
-                                    <FormGroup row className="my-0">
-                                        <Col xs="4">
-                                        <FormGroup>
-                                            <Label><Lang name="Shipment Info" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="textarea" rows='4' name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
-                                        
-                                        </FormGroup>
-                                        </Col>
-                                        <Col xs="4">
-                                        <FormGroup>
-                                            <Label><Lang name="Sales Contract No" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="select" name="incoterms" value={this.state.incoterms} onChange={e=>this.logChange(e)} required >
+                                                <option value="">{this.state.Lang['--- select incoterms ---']}</option>
+                                                <option value="EXW">EXW</option>
+                                                <option value="FCA">FCA</option>
+                                                <option value="FAS">FAS</option>
+                                                <option value="FOB">FOB</option>
+                                                <option value="CFR">CFR</option>
+                                                <option value="CIR">CIF</option>
+                                                <option value="CPT">CPT</option>
+                                                <option value="CIP">CIP</option>
+                                                <option value="DAF">DAF</option>
+                                                <option value="DES">DES</option>
+                                                <option value="DEQ">DEQ</option>
+                                                <option value="DDU">DDU</option>
+                                                <option value="DAT">DAT</option>
+                                                <option value="DAP">DAP</option>
+                                                <option value="DDP">DDP</option>
+                                                
+                                            </Input>
                                         
                                         </FormGroup>
                                         </Col>
@@ -229,14 +281,33 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Invoice No" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Input type="text" name="invoiceNo" value={this.state.invoiceNo} onChange={e=>this.logChange(e)} placeholder={this.state.Lang['Please enter your invoice']} required/>
+                                        
+                                        </FormGroup>
+                                        </Col>
+                                        <Col xs="4">    
+                                        <FormGroup>
+                                            <Label><Lang name="Sales Contract No" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Input type="text" name="salesContractNo" value={this.state.salesContractNo} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your sale contract']}/>
+                                        
+                                        </FormGroup>
+                                        </Col>
+                                        
+                                    </FormGroup>
+                                    <FormGroup row className="my-0">
+                                        
+
+                                        <Col xs="4">
+                                        <FormGroup>
+                                            <Label><Lang name="Shipment Info" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Input type="textarea" rows='4' name="shipment" value={this.state.shipment} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your shipment']} required/>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
-                                            <Label><Lang name="Notes" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="textarea" rows='4' name="pacName"  placeholder={this.state.Lang['Please enter your package name']} required/>
+                                            <Label><Lang name="Notes" /> </Label>
+                                            <Input type="textarea" rows='4' name="note" value={this.state.note} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your note']} />
                                         
                                         </FormGroup>
                                         </Col>

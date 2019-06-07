@@ -42,6 +42,19 @@
     "Please enter your description": "โปรดระบุรายละเอียด",
     "Please enter your price": "โปรดระบุจำนวนเงิน",
     "Please enter your pack size": "โปรดระบุขนาดแพ็ค",
-    "Please enter your discount": "โปรดระบุส่วนลด"
+    "Please enter your discount": "โปรดระบุส่วนลด",
+    "Please enter your transport type": "โปรดระบุประเภทการขนส่ง",
+    "Please enter your contact person": "โปรดระบุชื่อผู้ติดต่อ",
+    "Please enter your destination port": "โปรดระบุพอร์ตปลายทาง",
+    "Please enter your shipment": "โปรดระบุการจัดส่ง",
+    "Please enter your sale contract": "โปรดระบุสัญญาขาย",
+    "Please enter your invoice": "โปรดระบุหมายเลขใบแจ้งหนี้",
+    "Please enter your note": "โปรดระบุหมายเหตุ",
+    "--- select supplier ---": "--- เลือกคู่ค้า ---",
+    "--- select payment condition ---": "--- เลือกเงื่อนไขชำระเงิน ---",
+    "--- select transport type ---": "--- เลือกประเภทขนส่ง ---",
+    "--- select destination port ---": "--- เลือกพอร์ตปลายทาง ---",
+    "--- select incoterms ---": "--- select incoterms ---",
+    "--- select payment terms ---": "--- เลือกเงื่อนไขการชำระ ---"
 
 }

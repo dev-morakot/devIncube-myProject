@@ -42,6 +42,19 @@
     "Please enter your description": "Please enter your description",
     "Please enter your price": "Please enter your price",
     "Please enter your pack size": "Please enter your pack size",
-    "Please enter your discount": "Please enter your discount"
+    "Please enter your discount": "Please enter your discount",
+    "Please enter your transport type": "Please enter your transport type",
+    "Please enter your contact person": "Please enter your contact person",
+    "Please enter your destination port": "Please enter your destination port",
+    "Please enter your shipment": "Please enter your shipment",
+    "Please enter your sale contract": "Please enter your sale contract",
+    "Please enter your invoice": "Please enter your invoice",
+    "Please enter your note": "Please enter your note",
+    "--- select supplier ---": "--- select supplier ---",
+    "--- select payment condition ---": "--- select payment condition ---",
+    "--- select transport type ---": "--- select transport type ---",
+    "--- select destination port ---": "--- select destination port ---",
+    "--- select incoterms ---": "--- select incoterms ---",
+    "--- select payment terms ---": "--- select payment terms ---"
     
 }
