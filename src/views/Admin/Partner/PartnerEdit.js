@@ -4,7 +4,7 @@ import Lang from './../../../components/Lang/Lang';
 import i18n from './../../../i18n';
 import _ from 'lodash';
 
- class ProductAdd extends Component {
+ class PartnerEdit extends Component {
     
     constructor(props) {
         super(props);
@@ -29,10 +29,10 @@ import _ from 'lodash';
                 <Row>
                     <Col xl='12'>
                         <Card>
-                            <CardHeader><Lang name="Create Product" /></CardHeader>
+                            <CardHeader><Lang name="Edit Partner" /></CardHeader>
                             <CardBody>
 
-                                product add
+                                Partner edit
                             </CardBody>
                         </Card>
                     </Col>
@@ -42,4 +42,4 @@ import _ from 'lodash';
     }
 }
 
-export default ProductAdd;
+export default PartnerEdit;

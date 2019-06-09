@@ -13,10 +13,12 @@ class Products extends Component {
         pkColumn: 'prodCode',
         tableHeader: 'Products',
         column: [
-          {name: 'productName', label: 'Product Name'}
+          {name: 'productName', label: 'Product Name'},
+          {name: 'test', label: 'Product Name'}
         ],
         data: [
-          {name: 'product',label: 'stsfsdf'}
+          {name: 'product',label: 'stsfsdf'},
+          {name: 'product1',label: 'test1'}
         ],
         rowclick: this.props.match.path,
     }
@@ -28,8 +30,20 @@ class Products extends Component {
     }
   }
 
+  setData(data) {
+    let dataTmp = data;
+    if(_.isArray(dataTmp)) {
+      this.setState({data: dataTmp.map((item) => {
+        item['productName'] = 'morakot';
+        item['test'] = 'test';
+        return item;
+    })})
+    }
+  }
+
   componentWillMount(){
     this.setLanguage();
+    this.setData(this.state.data)
   }
     render() {
         return (

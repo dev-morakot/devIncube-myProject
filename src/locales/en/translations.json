@@ -55,6 +55,14 @@
     "--- select transport type ---": "--- select transport type ---",
     "--- select destination port ---": "--- select destination port ---",
     "--- select incoterms ---": "--- select incoterms ---",
-    "--- select payment terms ---": "--- select payment terms ---"
+    "--- select payment terms ---": "--- select payment terms ---",
+    "Products": "Products",
+    "Create Product": "Create Product",
+    "Product Detail": "Product Detail",
+    "Edit Product": "Edit Product",
+    "Partners": "Partners",
+    "Create Partner": "Create Partner",
+    "Edit Partner": "Edit Partner",
+    "Partner Detail": "Partner Detail"
     
 }

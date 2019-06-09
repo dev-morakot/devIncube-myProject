@@ -55,6 +55,14 @@
     "--- select transport type ---": "--- เลือกประเภทขนส่ง ---",
     "--- select destination port ---": "--- เลือกพอร์ตปลายทาง ---",
     "--- select incoterms ---": "--- select incoterms ---",
-    "--- select payment terms ---": "--- เลือกเงื่อนไขการชำระ ---"
+    "--- select payment terms ---": "--- เลือกเงื่อนไขการชำระ ---",
+    "Products": "สินค้า",
+    "Create Product": "สร้างสินค้า",
+    "Product Detail": "รายละเอียดสินค้า",
+    "Edit Product": "แก้ไขสินค้า",
+    "Partners": "คู่ค้า",
+    "Create Partner": "สร้างคู่ค้า",
+    "Edit Partner": "แก้ไขคู่ค้า",
+    "Partner Detail": "รายละเอียดคู่ค้า"
 
 }
