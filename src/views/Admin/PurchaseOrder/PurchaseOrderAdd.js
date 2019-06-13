@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Redirect, HashRouter, Route, Switch } from 'react-router-dom';
 import { Badge, Card, 
     CardBody, 
     CardHeader, 
@@ -11,10 +12,21 @@ import { Badge, Card,
     Table,
     Input,InputGroup,
     InputGroupAddon,Button } from 'reactstrap';
-
+import { numberWithCommas} from './../../../lib/_functions';
 import Lang from './../../../components/Lang/Lang';
 import i18n from './../../../i18n';
 import _ from 'lodash';
+import Select from 'react-select';
+
+function sumProperty(arr, type) {
+    return arr.reduce((total, obj) => {
+      if (typeof obj[type] === 'string') {
+        return total + Number(obj[type]);
+      }
+      return total + obj[type];
+    }, 0);
+  }
+
 class PurchaseOrderAdd extends Component {
     constructor(props) {
         super(props);
@@ -33,7 +45,8 @@ class PurchaseOrderAdd extends Component {
             price: 0,
             discount: 0,
             line_amount_total: 0,
-            incotermVersion: 'INCOTERMS ® 2010'
+            incotermVersion: 'INCOTERMS ® 2010',
+            back: false
         }
       }
 
@@ -57,9 +70,20 @@ class PurchaseOrderAdd extends Component {
         const {name, value} = e.target;
         this.setState({[name]: value})
 
+        
+    }
+
+    qtyChange = (e) => {
+        const {name, value} = e.target;
+        this.setState({qty: value});
+    }
+
+    priceChange = (e) => {
+        const {value} = e.target;
         this.setState({
-            line_amount_total: (this.state.price * this.state.qty) - this.state.discount
-        })
+            price: value,
+            
+        });
     }
 
     logChange = (e) => {
@@ -67,8 +91,14 @@ class PurchaseOrderAdd extends Component {
         this.setState({[name]: value});
     }
 
+   
     sumTotal = () => {
-        return this.state.line_amount_total
+        if(this.state.discount !== undefined && this.state.discount !== '') {
+            return ( parseFloat(this.state.price * this.state.qty) - parseFloat(this.state.discount)).toFixed(2)
+        } else {
+           return ( parseFloat(this.state.price * this.state.qty)).toFixed(2)
+        }
+        
        
     }
 
@@ -84,6 +114,7 @@ class PurchaseOrderAdd extends Component {
         const arr = [...this.state.arr]
         arr.splice(i, 1)
         this.setState({arr})
+        this.total();
     }
 
 
@@ -95,13 +126,21 @@ class PurchaseOrderAdd extends Component {
             productName: this.state.productName,
             packSize: this.state.packSize,
             description: this.state.description,
-            price: this.state.price,
+            price: parseFloat(this.state.price),
             unit: this.state.unit,
-            discount: this.state.discount,
-            qty: this.state.qty,
-            line_amount_total: (this.state.price * this.state.qty) - this.state.discount
+            qty: parseFloat(this.state.qty),
+            discount: parseFloat(this.state.discount)
         };
-        this.setState({arr: [...this.state.arr, item]});
+        if(this.state.discount !== undefined && this.state.discount !== '') {
+            item['line_amount_total'] = ( parseFloat(this.state.price * this.state.qty) - parseFloat(this.state.discount)).toFixed(2)
+        } else {
+            item['line_amount_total'] = ( parseFloat(this.state.price * this.state.qty)).toFixed(2)
+        }
+        this.setState({
+            arr: [...this.state.arr, item],
+           
+        });
+        
         
         this.setState({
             mfg: '',
@@ -112,13 +151,151 @@ class PurchaseOrderAdd extends Component {
             unit: '',
             discount: 0,
             qty: 0,
-            line_amount_total: 0
+            line_amount_total: 0.00
         })
         this.setState({
             primary: !this.state.primary,
         });
     }
+
+    save = () => {
+        
+        let input = {
+            amount_total: this.total()
+        };
+        if(this.state.supplier !== undefined) {
+            input['supplier'] = this.state.supplier;
+        }
+        if(this.state.orderDate !== undefined) {
+            input['orderDate'] = this.state.orderDate;
+        }
+        if(this.state.contactPerson !== undefined) {
+            input['contactPerson'] = this.state.contactPerson;
+        }
+        if(this.state.arr.length >=0) {
+            input['purchaseOrderLine'] = this.state.arr;
+        }
+        if(this.state.transportType !== undefined) {
+            input['transportType'] = this.state.transportType;
+        }
+        if(this.state.paymentCondition !== undefined) {
+            input['paymentCondition'] = this.state.paymentCondition;
+        }
+        if(this.state.destinationPort !== undefined) {
+            input['destinationPort'] = this.state.destinationPort;
+        }
+        if(this.state.paymentTerms !== undefined) {
+            input['paymentTerms'] = this.state.paymentTerms;
+        }
+        if(this.state.incotermVersion !== undefined) {
+            input['incotermVersion'] = this.state.incotermVersion;
+        }
+        if(this.state.currency !== undefined) {
+            input['currency'] = this.state.currency;
+        }
+        if(this.state.incoterms !== undefined) {
+            input['incoterms'] = this.state.incoterms;
+        }
+        if(this.state.invoiceNo !== undefined) {
+            input['invoiceNo'] = this.state.invoiceNo;
+        }
+        if(this.state.salesContractNo !== undefined) {
+            input['salesContractNo'] = this.state.salesContractNo;
+        }
+        if(this.state.shipment !== undefined) {
+            input['shipment'] = this.state.shipment;
+        }
+        if(this.state.note !== undefined) {
+            input['note'] = this.state.note;
+        }
+    
+        if(this.state.commercialInvoice !== undefined) {
+            input['commercialInvoice'] = this.state.commercialInvoice;
+        }
+        if(this.state.certHealth !== undefined) {
+            input['certHealth'] = this.state.certHealth;
+        }
+        if(this.state.shippingAdvice !== undefined) {
+            input['shippingAdvice'] = this.state.shippingAdvice;
+        }
+        if(this.state.packingList !== undefined) {
+            input['packingList'] = this.state.packingList;
+        }
+        if(this.state.certOrigin !== undefined) {
+            input['certOrigin'] = this.state.certOrigin;
+        }
+        if(this.state.telexRelease !== undefined) {
+            input['telexRelease'] = this.state.telexRelease;
+        }
+        if(this.state.coa !== undefined) {
+            input['coa'] = this.state.coa;
+        }
+        if(this.state.formE !== undefined) {
+            input['formE'] = this.state.formE;
+        }
+        if(this.state.originBL !== undefined) {
+            input['originBL'] = this.state.originBL;
+        }
+        if(this.state.insurance !== undefined) {
+            input['insurance'] = this.state.insurance;
+        }
+
+        if(this.state.formAI !== undefined) {
+            input['formAI'] = this.state.formAI;
+        }
+        if(this.state.awb !== undefined) {
+            input['awb'] = this.state.awb;
+        }
+        if(this.state.reqDocNote !== undefined) {
+            input['reqDocNote'] = this.state.reqDocNote;
+        }
+        if(this.state.packingOne !== undefined) {
+            input['packingOne'] = this.state.packingOne;
+        }
+        if(this.state.packingTwo !== undefined) {
+            input['packingTwo'] = this.state.packingTwo;
+        }
+        if(this.state.sampleOne !== undefined) {
+            input['sampleOne'] = this.state.sampleOne;
+        }
+        if(this.state.sampleTwo !== undefined) {
+            input['sampleTwo'] = this.state.sampleTwo;
+        }
+        if(this.state.shippingMark !== undefined) {
+            input['shippingMark'] = this.state.shippingMark;
+        }
+
+        if(this.state.claimOne !== undefined) {
+            input['claimOne'] = this.state.claimOne;
+        }
+        if(this.state.claimTwo !== undefined) {
+            input['claimTwo'] = this.state.claimTwo;
+        }
+        console.log(input);
+    }
+
+    
+    total = () => {
+        return this.state.arr
+        .map((obj) => { return parseFloat(obj.line_amount_total); })
+        .reduce((prev, next) => { 
+            
+            return prev += next; 
+            
+        }, 0.00);
+
+        
+    }
+
+    cancel = () => {
+        this.setState({back: true});
+    }
     render() {
+        if(this.state.back) {
+            return <Redirect push to={'/admin/' + this.props.match.path.split('/')[2]}/>;
+        }
+
+        
         return (
             <div>
                 <Row>
@@ -151,7 +328,7 @@ class PurchaseOrderAdd extends Component {
                                     <FormGroup row className="my-0">
                                         <Col xs="4">
                                         <FormGroup>
-                                            <Label><Lang name="Contact Person" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Label><Lang name="Contact Person" />  </Label>
                                             <Input type="text" name="contactPerson" value={this.state.contactPerson} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your contact person']} />
                                         
                                         </FormGroup>
@@ -280,14 +457,14 @@ class PurchaseOrderAdd extends Component {
                                     <FormGroup row className="my-0">
                                         <Col xs="4">
                                         <FormGroup>
-                                            <Label><Lang name="Invoice No" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Label><Lang name="Invoice No" />  </Label>
                                             <Input type="text" name="invoiceNo" value={this.state.invoiceNo} onChange={e=>this.logChange(e)} placeholder={this.state.Lang['Please enter your invoice']} required/>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">    
                                         <FormGroup>
-                                            <Label><Lang name="Sales Contract No" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Label><Lang name="Sales Contract No" />  </Label>
                                             <Input type="text" name="salesContractNo" value={this.state.salesContractNo} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your sale contract']}/>
                                         
                                         </FormGroup>
@@ -380,7 +557,8 @@ class PurchaseOrderAdd extends Component {
                                         <Form inline style={{marginTop: 10}}>
                                             <FormGroup className="pr-3">
                                                 <Label  className="pr-3"><Lang name="Amount Total" /> </Label>
-                                                <Input type="text" style={{width: 300,backgroundColor: 'green'}} />
+                                               
+                                                <Input  type="text" value={this.total()} readOnly style={{width: 300,backgroundColor: 'green', color: 'white', textAlign: 'right'}} />
                                             </FormGroup>
                                         </Form>
                                     </Col>
@@ -397,57 +575,57 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Required Document" />:</Label><FormText className="help-block"><Lang name="Choose multiple" /></FormText></Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="commercialInvoice" value="Commercial Invoice" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Commercial Invoice" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="certHealth" value="Cert. of Health" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Cert. of Health" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="shippingAdvice" value="Shipping Advice" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Shipping Advice" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingList" value="Packing List" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packing List" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="certOrigin" value="Cert of Origin" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Cert of Origin" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="telexRelease" value="Telex release B/L" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Telex release B/L" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="coa" value="COA" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="COA" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="formE" value="Form E" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Form E" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="originBL" value="Original B/L" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Original B/L" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="insurance" value="Insurance" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Insurance" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="formAI" value="Form AI" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Form AI" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="awb" value="AWB" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="AWB" /></Label>
                                             </FormGroup>
                                         </Col>
@@ -457,7 +635,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Required Document Notes:" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="reqDocNote" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Step 1: One set of the draft of shipping document is sent to BIC Chemical via email before loading the goods." /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
@@ -476,11 +654,11 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Packing" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packed in export standard packing with Thai Label." /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packed in export standard packing and on every packing must be indicated:" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
@@ -494,11 +672,11 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Sample" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="sampleOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Please include 20g sample to be ship along with the cargo(Please insert outside of the package)" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="sampleTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="No need Sample" /></Label>
                                             </FormGroup>
                                         </Col>
@@ -509,7 +687,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Shipping Mark" />:</Label></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="shippingMark" value="Shipping Mark is BIC Chemical Co., Ltd." />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Shipping Mark is BIC Chemical Co., Ltd." /></Label>
                                             </FormGroup>
                                            
@@ -521,19 +699,19 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="CLAIM" />:</Label></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="claimOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="In case of quality problem, claim should be lodged by the Buyers within 30 days after the arrival of the goods at the port of destination" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" value="option1" />
+                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="claimTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="In case of quantity problem; claim should be lodged by the Buyer within 15 days after the arrival of the goods at the port of destination" /></Label>
                                             </FormGroup>
                                         </Col>
                                     </FormGroup>
                                     <Col xl='3'>
                                         <FormGroup>
-                                            <Button color="primary" size="larg"><Lang name="Save" /> </Button>{'  '}
-                                            <Button color="warning" size="larg"><Lang name="Cancel" /> </Button>
+                                            <Button onClick={() => this.save()} color="primary" size="larg"><Lang name="Save" /> </Button>{'  '}
+                                            <Button onClick={() => this.cancel()} color="warning" size="larg"><Lang name="Cancel" /> </Button>
                                         </FormGroup>
                                     </Col>
                                     
@@ -561,7 +739,7 @@ class PurchaseOrderAdd extends Component {
                             <Col xl='6'>
                                 <FormGroup>
                                     <Label><Lang name="Qty" /></Label>
-                                    <Input type="number" name="qty" placeholder={this.state.Lang['Please enter your qty']} value={this.state.qty} onChange={e=>this.handleChange(e)} className="form-control"/>
+                                    <Input type="number" name="qty" placeholder={this.state.Lang['Please enter your qty']} value={this.state.qty} onChange={e=>this.qtyChange(e)} className="form-control"/>
                                 </FormGroup>
                             </Col>
                         </FormGroup>
@@ -600,7 +778,7 @@ class PurchaseOrderAdd extends Component {
                             <Col xl='6'>
                                 <FormGroup>
                                     <Label><Lang name="Price/Unit" /></Label>
-                                    <Input type="number" name="price" value={this.state.price} placeholder={this.state.Lang['Please enter your price']}  onChange={e=>this.handleChange(e)}  className="form-control" />
+                                    <Input type="number" name="price" value={this.state.price} placeholder={this.state.Lang['Please enter your price']}  onChange={e=>this.priceChange(e)}  className="form-control" />
                                 </FormGroup>
                             </Col>
                         </FormGroup>
