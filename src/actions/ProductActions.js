@@ -16,8 +16,8 @@ import { apiHeader } from './header';
 export const productFetch = () => {
     return dispatch => {
         dispatch({type: LOAER_PROCESSING, playload: {loading: true, text: 'loading'}});
-        axios.get(BACKEND_ENDPOINT+'/api/read.php', apiHeader()).then(function (response) {
-            dispatch({type: PRODUCT_FETCH, playload: response.data.data});
+        axios.get(BACKEND_ENDPOINT+'/api/product/read.php', apiHeader().headers).then(function (response) {
+            dispatch({type: PRODUCT_FETCH, playload: response.data.records});
             dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         }).catch(function (error) {
             dispatch({type: PRODUCT_FETCH, playload: []});

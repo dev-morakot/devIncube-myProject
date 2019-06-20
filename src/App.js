@@ -84,7 +84,12 @@ class App extends Component {
       <HashRouter>
 
           <React.Suspense fallback={loading()}>
-            {!this.props.auth.login&&
+          <Switch>
+              <Route exact path="/login" name="Login Page" component={Login} />
+              
+              <Route path="/" name="Home" render={props => <DefaultLayout {...props}/>} />
+            </Switch>
+           {/* {!this.props.auth.login&&
             <Switch>
               <Route exact path="/login" name="Login Page" component={Login} />
               <Route path="/" name="Loading Page" component={LoadingPage} />
@@ -96,7 +101,7 @@ class App extends Component {
 
               <Route path="/" name="Home" render={props => <DefaultLayout {...props}/>} />
             </Switch>
-            }
+            }*/}
           </React.Suspense>
       </HashRouter>
     );

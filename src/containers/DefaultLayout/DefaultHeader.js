@@ -56,7 +56,7 @@ class DefaultHeader extends Component {
   }
 
   getImageProfile(){
-    if(this.props.auth.info.login_type === 'facebook') {
+    /*if(this.props.auth.info.login_type === 'facebook') {
       if(_.has(this.props,'auth.info.profile')&&'null'!==this.props.auth.info.profile.picture.data.url&&!_.isNull(this.props.auth.info.profile.picture.data.url)&&''!==this.props.auth.info.profile.picture.data.url){
         return this.props.auth.info.profile.picture.data.url;
       }else{
@@ -64,7 +64,7 @@ class DefaultHeader extends Component {
       }
     } else if(this.props.auth.info.login_type === 'google') {
       return imageProfile;
-    }
+    }*/
     
   }
 
@@ -110,7 +110,7 @@ class DefaultHeader extends Component {
               <img src={this.getImageProfile()} className="img-avatar"  />
             </DropdownToggle>
             <DropdownMenu right style={{ right: 'auto' }}>
-              <DropdownItem header tag="div" className="text-left"><strong><Lang name="Settings"/></strong> ({this.props.auth.info.profile.name})</DropdownItem>
+              <DropdownItem header tag="div" className="text-left"><strong><Lang name="Settings"/></strong> ()</DropdownItem>
               <DropdownItem onClick={e => this.props.onLogout(e)}><i className="fa fa-lock"></i> Logout</DropdownItem>
             </DropdownMenu>
           </AppHeaderDropdown>

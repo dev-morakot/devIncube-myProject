@@ -87,12 +87,13 @@ class DefaultLayout extends Component {
                         )} />
                     ) : (null);
                   })}
-                  {!this.props.auth.login&&
+                  <Redirect from="/" to={'/dashboard'}/>
+                 {/* {!this.props.auth.login&&
                   <Redirect from="/" to="/login" />}
                   {'facebook'===this.state.accountType&&
                    <Redirect from="/" to="/admin/purchaseOrder" />}
                    {'google'===this.state.accountType&&
-                   <Redirect from="/" to="/admin/purchaseOrder" />}
+                 <Redirect from="/" to="/admin/purchaseOrder" />} */}
                 </Switch>
               </Suspense>
             </Container>

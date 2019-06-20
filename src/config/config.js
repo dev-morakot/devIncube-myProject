@@ -1,5 +1,5 @@
 // backedn api
-export const BACKEND_ENDPOINT = "http://atomeii.com";
+export const BACKEND_ENDPOINT = "https://atomeii.com";
 
 // backend api token key
 export const BACKEND_ACCESS_TOKEN = '';
