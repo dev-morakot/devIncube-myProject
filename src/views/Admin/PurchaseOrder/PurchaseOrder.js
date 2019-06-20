@@ -4,7 +4,7 @@ import Lang from './../../../components/Lang/Lang';
 import i18n from './../../../i18n';
 import _ from 'lodash';
 import TableView from './../../../components/TableView';
-
+import { connect } from 'react-redux';
 
  class PurchaseOrder extends Component {
     constructor(props) {
@@ -62,4 +62,8 @@ import TableView from './../../../components/TableView';
     }
 }
 
-export default (PurchaseOrder);
+const mapStateToProps = (state) => {
+    console.log('fb',state);
+    return { loader: state.loader, auth: state.auth}
+  }
+export default connect(mapStateToProps,{}) (PurchaseOrder);

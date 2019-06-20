@@ -3,10 +3,13 @@ import { Redirect, HashRouter, Route, Switch, Link } from 'react-router-dom';
 import { Button, Card, CardBody, CardGroup, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row } from 'reactstrap';
 import { connect } from 'react-redux';
 import Swal from 'sweetalert2';
+import { Auth } from 'aws-amplify';
 import Loader from './../../../components/Loader';
-import {login, loadCompleted, loadProcessing } from './../../../actions'
+import {login, loadCompleted, loadProcessing, facebookLogin } from './../../../actions'
 import _ from 'lodash';
+import FacebookLogin from 'react-facebook-login';
 
+import GoogleLogin from 'react-google-login';
 
 class Login extends Component {
   constructor(props) {
@@ -80,7 +83,7 @@ class Login extends Component {
   async login(e) {
     e.preventDefault();
     if(this.state.username!==''&&this.state.password!=='') {
-
+      this.props.loadProcessing('verifiting');
       const input = {
         username: this.state.username,
         password: this.state.password,
@@ -89,7 +92,7 @@ class Login extends Component {
       //this.setState({processType: 'success'});
       //this.props.login(input)
       if (this.state.username === 'demo' && this.state.password === '1234') {
-        this.setState({processType: 'success'});
+       // this.setState({processType: 'success'});
         this.setState({page: true});
       }
       //this.setState({page: true});
@@ -100,13 +103,29 @@ class Login extends Component {
       this.setState({page: true});
   }
 
+  responseFacebook = (response) => {
+   // this.props.loadProcessing('verifiting');
+    if(response) {
+      this.props.loadCompleted();
+      console.log(response);
+      this.props.facebookLogin(response);
+    }
+  }
+
   render() {
 
     if(this.state.page) {
         return <Redirect push to={'/dashboard'}/>;
     }
+   
+    const responseGoogle = (response) => {
+      console.log(response);
+    }
+
     return (
       <div className="app flex-row align-items-center">
+      {this.props.loader.loading&&
+        <Loader text={this.props.loader.text}/>}
         <Container>
           <Row className="justify-content-center">
             <Col md="8">
@@ -137,6 +156,8 @@ class Login extends Component {
                           <Button color="primary" onClick={e=>this.login(e)} className="px-4">Login</Button>
                         </Col>
                         <Col xs="6" className="text-right">
+                        
+
                           <Button color="link" className="px-0">Forgot password?</Button>
                         </Col>
                       </Row>
@@ -146,12 +167,24 @@ class Login extends Component {
                 <Card className="text-white bg-primary py-5 d-md-down-none" style={{ width: '44%' }}>
                   <CardBody className="text-center">
                     <div>
-                      <h2>Sign up</h2>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
-                        labore et dolore magna aliqua.</p>
-                      <Link to="/register">
-                        <Button color="primary" className="mt-3" active tabIndex={-1}>Register Now!</Button>
-                      </Link>
+                      
+                      <p>
+                      <GoogleLogin
+                          clientId="160597490665-s6oahloofim01prhkdmq7qd0r7l839k7.apps.googleusercontent.com" //CLIENTID NOT CREATED YET
+                          buttonText="LOGIN WITH GOOGLE"
+                          onSuccess={this.googleResponse}
+                          onFailure={this.onFailure}
+                        />
+                      </p>
+                      
+                      <FacebookLogin
+                        appId="725434274515316" //APP ID NOT CREATED YET
+                        fields="name,email,picture"
+                        
+                        icon="fa-facebook"
+                        callback={this.responseFacebook}
+                      />
+                     
                     </div>
                   </CardBody>
                 </Card>
@@ -171,4 +204,4 @@ const mapStateToProps = (state) => {
   return { loader: state.loader, auth: state.auth}
 }
 
-export default connect(mapStateToProps,{login,loadProcessing,loadCompleted})(Login);
+export default connect(mapStateToProps,{facebookLogin,login,loadProcessing,loadCompleted})(Login);

@@ -7,7 +7,14 @@ import {apiHeader} from './header';
 
 export const checkAuthentication = (session) => {
     return dispatch => {
-        
+        if(null!==localStorage.getItem('auth')&&parseInt(localStorage.getItem('auth').toString())){
+            dispatch({type: AUTH_CHECK_AUTHENTICATION, playload: {login: true, info: {
+                profile: session,
+                login_type: 'facebook',
+            }}});
+        } else {
+            dispatch({type: AUTH_CHECK_AUTHENTICATION, playload: {}});
+        }
     }
 }
 
@@ -28,11 +35,26 @@ export const login = (session) => {
     }
 }
 
+export const facebookLogin = (res) => {
+    return dispatch => {
+        let type = 'not-role';
+        localStorage.setItem('auth', 1);
+        localStorage.setItem('usertype', 0);
+        localStorage.setItem('reloadLogin', 0);
+       
+        dispatch({type: AUTH_LOGIN, playload: {login: true, info: {
+            profile: res,
+            login_type: 'facebook',
+        }}});
+    }
+}
+
 export const logout = () => {
     return dispatch => {
         localStorage.setItem('auth', 0);
         localStorage.setItem('usertype','');
         localStorage.setItem('reloadLogin', 0);
+       
         dispatch({type: AUTH_LOGOUT, playload: {login: false, info: {}}});
     }
 }

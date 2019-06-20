@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import loader from './../../../assets/img/loader.svg';
-import logo from './../../../assets/img/react.svg';
+//import logo from './../../../assets/img/react.svg';
 const style = {
   box : {
     width: 200,
@@ -44,7 +44,7 @@ class LoadingPage extends Component {
     return (
       <div className="app flex-row align-items-center">
         <div style={style.box}>
-          <img src={logo} width={150} alt=""/>
+          {/*<img src={logo} width={150} alt=""/>*/}
           <div><img src={loader} alt=""/></div>
         </div>
       </div>

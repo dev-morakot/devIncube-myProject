@@ -2,7 +2,8 @@ import React, { Component, Suspense } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import * as router from 'react-router-dom';
 import { Container } from 'reactstrap';
-
+import { connect } from 'react-redux';
+import _ from 'lodash';
 import {
   AppAside,
   AppFooter,
@@ -19,14 +20,30 @@ import {
 import navigation from '../../_navAdmin';
 // routes config
 import routes from '../../routes';
+import Loader from './../../components/Loader';
 
 const DefaultAside = React.lazy(() => import('./DefaultAside'));
 const DefaultFooter = React.lazy(() => import('./DefaultFooter'));
 const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
 
 class DefaultLayout extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      accountType: ''
+    }
+  }
 
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
+
+  componentDidMount() {
+    if(_.has(this.props.auth,'info') && _.has(this.props.auth.info,'login_type')) {
+      this.setState({accountType: this.props.auth.info.login_type});
+    } else {
+      this.setState({accountType: ''})
+    }
+  }
+  
 
   signOut(e) {
     e.preventDefault()
@@ -36,6 +53,8 @@ class DefaultLayout extends Component {
   render() {
     return (
       <div className="app">
+      {this.props.loader.loading&&
+        <Loader text={this.props.loader.text} />}
         <AppHeader fixed>
           <Suspense  fallback={this.loading()}>
             <DefaultHeader onLogout={e=>this.signOut(e)}/>
@@ -68,7 +87,12 @@ class DefaultLayout extends Component {
                         )} />
                     ) : (null);
                   })}
-                  <Redirect from="/" to="/dashboard" />
+                  {!this.props.auth.login&&
+                  <Redirect from="/" to="/login" />}
+                  {'facebook'===this.state.accountType&&
+                   <Redirect from="/" to="/admin/purchaseOrder" />}
+                   {'google'===this.state.accountType&&
+                   <Redirect from="/" to="/admin/purchaseOrder" />}
                 </Switch>
               </Suspense>
             </Container>
@@ -89,4 +113,11 @@ class DefaultLayout extends Component {
   }
 }
 
-export default DefaultLayout;
+function mapStateToProps(state) {
+  return {
+    auth: state.auth,
+    loader: state.loader
+  }
+}
+
+export default connect(mapStateToProps,{}) (DefaultLayout);

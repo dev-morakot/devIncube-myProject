@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { AppAsideToggler, AppHeaderDropdown, AppNavbarBrand, AppSidebarToggler } from '@coreui/react';
 import logo from '../../assets/img/brand/logo.svg'
 import sygnet from '../../assets/img/brand/sygnet.svg'
-
+import imageProfile from './../../assets/img/profile.svg';
 import { LANGUAGE,ROLES } from './../../config/config';
 import _ from 'lodash';
 import i18n from 'i18next';
@@ -55,6 +55,19 @@ class DefaultHeader extends Component {
     }, 1000)
   }
 
+  getImageProfile(){
+    if(this.props.auth.info.login_type === 'facebook') {
+      if(_.has(this.props,'auth.info.profile')&&'null'!==this.props.auth.info.profile.picture.data.url&&!_.isNull(this.props.auth.info.profile.picture.data.url)&&''!==this.props.auth.info.profile.picture.data.url){
+        return this.props.auth.info.profile.picture.data.url;
+      }else{
+        return imageProfile;
+      }
+    } else if(this.props.auth.info.login_type === 'google') {
+      return imageProfile;
+    }
+    
+  }
+
   render() {
 
     // eslint-disable-next-line
@@ -94,10 +107,10 @@ class DefaultHeader extends Component {
 
           <AppHeaderDropdown direction="down">
             <DropdownToggle nav>
-              <img src={'../../assets/img/avatars/6.jpg'} className="img-avatar" alt="admin@bootstrapmaster.com" />
+              <img src={this.getImageProfile()} className="img-avatar"  />
             </DropdownToggle>
             <DropdownMenu right style={{ right: 'auto' }}>
-
+              <DropdownItem header tag="div" className="text-left"><strong><Lang name="Settings"/></strong> ({this.props.auth.info.profile.name})</DropdownItem>
               <DropdownItem onClick={e => this.props.onLogout(e)}><i className="fa fa-lock"></i> Logout</DropdownItem>
             </DropdownMenu>
           </AppHeaderDropdown>
