@@ -5,14 +5,18 @@ import PropTypes from 'prop-types';
 
 import { AppAsideToggler, AppHeaderDropdown, AppNavbarBrand, AppSidebarToggler } from '@coreui/react';
 import logo from '../../assets/img/brand/logo.svg'
+
 import sygnet from '../../assets/img/brand/sygnet.svg'
-import imageProfile from './../../assets/img/profile.svg';
+import imageProfile from './../../assets/img/profile.svg'
 import { LANGUAGE,ROLES } from './../../config/config';
 import _ from 'lodash';
 import i18n from 'i18next';
 import Lang from './../../components/Lang/Lang';
 import { connect } from 'react-redux';
 import { chooseRole } from './../../actions';
+// Firebase.
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const propTypes = {
   children: PropTypes.node,
@@ -25,7 +29,8 @@ class DefaultHeader extends Component {
     super(props);
     this.state = {
       useLang: 'en',
-      useFlag: 'us'
+      useFlag: 'us',
+      isSignedIn: false // Local signed-in state.
     }
   }
 
@@ -39,6 +44,13 @@ class DefaultHeader extends Component {
     if('undefined' !== typeof localStorage.getItem('useFlag')&&!_.isNull(localStorage.getItem('useFlag'))){
       this.setState({useFlag: localStorage.getItem('useFlag')});
     }
+    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+      (user) => this.setState({isSignedIn: !!user, currentUser: user})
+    );
+  }
+
+  componentWillUnmount() {
+    this.unregisterAuthObserver();
   }
 
   switchRole(role){
@@ -55,21 +67,9 @@ class DefaultHeader extends Component {
     }, 1000)
   }
 
-  getImageProfile(){
-    /*if(this.props.auth.info.login_type === 'facebook') {
-      if(_.has(this.props,'auth.info.profile')&&'null'!==this.props.auth.info.profile.picture.data.url&&!_.isNull(this.props.auth.info.profile.picture.data.url)&&''!==this.props.auth.info.profile.picture.data.url){
-        return this.props.auth.info.profile.picture.data.url;
-      }else{
-        return imageProfile;
-      }
-    } else if(this.props.auth.info.login_type === 'google') {
-      return imageProfile;
-    }*/
-    
-  }
-
   render() {
-
+    console.log('user', this.state.currentUser)
+    console.log('isSignedIn', this.state.isSignedIn)
     // eslint-disable-next-line
     const { children, ...attributes } = this.props;
 
@@ -107,11 +107,14 @@ class DefaultHeader extends Component {
 
           <AppHeaderDropdown direction="down">
             <DropdownToggle nav>
-              <img src={this.getImageProfile()} className="img-avatar"  />
+              {this.state.isSignedIn&&
+              <img src={(firebase.auth().currentUser.photoURL !== null)?firebase.auth().currentUser.photoURL: imageProfile} className="img-avatar"  />
+              }
+             
             </DropdownToggle>
             <DropdownMenu right style={{ right: 'auto' }}>
-              <DropdownItem header tag="div" className="text-left"><strong><Lang name="Settings"/></strong> ()</DropdownItem>
-              <DropdownItem onClick={e => this.props.onLogout(e)}><i className="fa fa-lock"></i> Logout</DropdownItem>
+              <DropdownItem header tag="div" className="text-left"><strong><Lang name="Settings"/></strong> ({(firebase.auth().currentUser.displayName !== null)?firebase.auth().currentUser.displayName: firebase.auth().currentUser.email})</DropdownItem>
+              <DropdownItem onClick={() => firebase.auth().signOut()}><i className="fa fa-lock"></i> Logout</DropdownItem>
             </DropdownMenu>
           </AppHeaderDropdown>
         </Nav>

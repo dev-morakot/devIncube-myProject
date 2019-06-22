@@ -237,7 +237,7 @@ class TableView extends Component {
                                             </th>
                                         )
                                     })}
-                                    <th>Action</th>
+                                   
                                 </tr>
                             </thead>
                             <tbody>
@@ -263,21 +263,21 @@ class TableView extends Component {
                                     }
                                 }).map((item,key)=>{
                                     return (
-                                        <tr key={key}>
+                                        <tr key={key} onClick={this.props.detail.bind(this,item.id)}>
                                             {column.map((col,ckey)=>{
                                                 return (
                                                     <td key={ckey}>{item[col.name]}</td>
                                                 )
                                             })}
-                                            <td>
+                                            {/*<td>
                                                 <Link to={rowclick+'/'+item[pk]}>
-                                                    <Button type="button" color="primary"><i className="fa fa-eye"></i> View</Button>
+                                                    <Button type="button" color="primary"><i className="fa fa-eye"></i> </Button>
                                                 </Link>
                                                 &nbsp;
-                                                <Link to={rowclick+'/edit/'+item[pk]}>
-                                                    <Button type="button" color="danger"><i className="fa fa-pencil-square-o"></i> Edit</Button>
-                                                </Link>
-                                            </td>
+                                                
+                                                <Button type="button" onClick={this.props.deleteProduct.bind(this, item.id)} color="danger"><i className="fa fa-remove"></i> </Button>
+                                                
+                                            </td>*/}
                                         </tr>
                                     )
                                 })}

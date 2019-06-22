@@ -7,29 +7,83 @@ import { Auth } from 'aws-amplify';
 import Loader from './../../../components/Loader';
 import {login, loadCompleted, loadProcessing, facebookLogin } from './../../../actions'
 import _ from 'lodash';
-import FacebookLogin from 'react-facebook-login';
 
-import GoogleLogin from 'react-google-login';
+
+// Firebase.
+import firebase from 'firebase/app';
+import 'firebase/auth';
+//import auth from 'firebase/auth';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+
+
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyA5kHHodF2Hbj7oEbB_577t9AyCiPIwxj4",
+    authDomain: "dev-project-ef9cf.firebaseapp.com",
+    databaseURL: "https://dev-project-ef9cf.firebaseio.com",
+    projectId: "dev-project-ef9cf",
+    storageBucket: "",
+    messagingSenderId: "46127640904",
+    appId: "1:46127640904:web:1af058d2743f0340"
+};
+
+// Instantiate a Firebase app.
+firebase.initializeApp(firebaseConfig);
 
 class Login extends Component {
   constructor(props) {
       super(props);
       this.state = {
           page: false,
-          username: '',
+          email: '',
           password: '',
-          processType: 'login'
+          processType: 'login',
+          currentUser: null,
+          message: '',
+          isSignedIn: false // Local signed-in state.
+
       }
+      
   }
+
+  // Configure FirebaseUI.
+  uiConfig = {
+    // Popup signin flow rather than redirect flow.
+    signInFlow: 'popup',
+    // We will display Google , Facebook , Etc as auth providers.
+    signInOptions: [
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+     // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+      firebase.auth.GithubAuthProvider.PROVIDER_ID,
+      //firebase.auth.EmailAuthProvider.PROVIDER_ID,
+    ],
+    callbacks: {
+      // Avoid redirects after sign-in.
+      signInSuccess: () => false
+    }
+  };
+
+  componentDidMount() {
+    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+        (user) => this.setState({isSignedIn: !!user})
+    );
+  }
+  
+  // Make sure we un-register Firebase observers when the component unmounts.
+  componentWillUnmount() {
+    this.unregisterAuthObserver();
+  }
+
 
   componentWillReceiveProps(nextProps) {
-    if(this.state.processType === 'success') {
+    /*if(this.state.processType === 'success') {
 
       this.resultLogin(nextProps.auth.data);
-    }
+    }*/
   }
 
-  resultLogin(message) {
+  /*resultLogin(message) {
     this.setState({processType: ''});
     console.log('result',message);
     if(_.has(message, 'error')&& message.error !== null) {
@@ -59,18 +113,14 @@ class Login extends Component {
         }
     });
     }
-  }
+  }*/
 
   handleChange = e => {
     const { name , value } = e.target;
     this.setState({[name]: value});
   }
 
-  handdleEnter(e) {
-    if('Enter' ===e.key&&this.checkButtonLogin()) {
-      this.login(e);
-    }
-  }
+ 
 
   checkButtonLogin() {
     if(this.state.username !== '' && this.state.password !== '') {
@@ -82,46 +132,27 @@ class Login extends Component {
 
   async login(e) {
     e.preventDefault();
-    if(this.state.username!==''&&this.state.password!=='') {
-      this.props.loadProcessing('verifiting');
-      const input = {
-        username: this.state.username,
-        password: this.state.password,
-        grant_type: 'password'
-      }
-      //this.setState({processType: 'success'});
-      //this.props.login(input)
-      if (this.state.username === 'demo' && this.state.password === '1234') {
-       // this.setState({processType: 'success'});
-        this.setState({page: true});
-      }
-      //this.setState({page: true});
-    }
-  }
-
-  LoadingPage = () => {
-      this.setState({page: true});
-  }
-
-  responseFacebook = (response) => {
-   // this.props.loadProcessing('verifiting');
-    if(response) {
-      this.props.loadCompleted();
-      console.log(response);
-      this.props.facebookLogin(response);
-    }
+    const { email, password } = this.state
+    firebase.auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(response => {
+        this.setState({
+          currentUser: response.user
+        })
+      })
+      .catch(error => {
+        this.setState({
+          message: error.message
+        })
+      })
   }
 
   render() {
 
-    if(this.state.page) {
+    if(this.state.isSignedIn) {
         return <Redirect push to={'/dashboard'}/>;
     }
-   
-    const responseGoogle = (response) => {
-      console.log(response);
-    }
-
+  
     return (
       <div className="app flex-row align-items-center">
       {this.props.loader.loading&&
@@ -141,7 +172,7 @@ class Login extends Component {
                             <i className="icon-user"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input type="text" value={this.state.username} name="username" onChange={e=>this.handleChange(e)} onKeyPress={e=>this.handdleEnter(e)}  placeholder="Username" autoComplete="username" />
+                        <Input type="text" value={this.state.email} name="email" onChange={e=>this.handleChange(e)}  placeholder="Email" />
                       </InputGroup>
                       <InputGroup className="mb-4">
                         <InputGroupAddon addonType="prepend">
@@ -149,17 +180,13 @@ class Login extends Component {
                             <i className="icon-lock"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input name="password" value={this.state.password} onChange={e=>this.handleChange(e)} onKeyPress={e=>this.handdleEnter(e)} type="password" placeholder="Password" autoComplete="current-password" />
+                        <Input name="password" value={this.state.password} onChange={e=>this.handleChange(e)}  type="password" placeholder="Password" />
                       </InputGroup>
                       <Row>
                         <Col xs="6">
                           <Button color="primary" onClick={e=>this.login(e)} className="px-4">Login</Button>
                         </Col>
-                        <Col xs="6" className="text-right">
-                        
-
-                          <Button color="link" className="px-0">Forgot password?</Button>
-                        </Col>
+                       
                       </Row>
                     </Form>
                   </CardBody>
@@ -168,23 +195,10 @@ class Login extends Component {
                   <CardBody className="text-center">
                     <div>
                       
-                      <p>
-                      <GoogleLogin
-                          clientId="160597490665-s6oahloofim01prhkdmq7qd0r7l839k7.apps.googleusercontent.com" //CLIENTID NOT CREATED YET
-                          buttonText="LOGIN WITH GOOGLE"
-                          onSuccess={this.googleResponse}
-                          onFailure={this.onFailure}
-                        />
-                      </p>
-                      
-                      <FacebookLogin
-                        appId="725434274515316" //APP ID NOT CREATED YET
-                        fields="name,email,picture"
-                        
-                        icon="fa-facebook"
-                        callback={this.responseFacebook}
-                      />
-                     
+                     {!this.state.isSignedIn &&
+                      <StyledFirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebase.auth()}/>
+                    }
+                    
                     </div>
                   </CardBody>
                 </Card>

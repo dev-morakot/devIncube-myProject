@@ -13,7 +13,10 @@ import {
 import Lang from './../../../components/Lang/Lang';
 import i18n from './../../../i18n';
 import _ from 'lodash';
-import { multicastChannel } from 'redux-saga';
+import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
+import {partnerFetch, partnerAdd } from './../../../actions';
+import Swal from 'sweetalert2'
 
  class PartnerAdd extends Component {
     
@@ -23,19 +26,20 @@ import { multicastChannel } from 'redux-saga';
             Lang: {},
             name: '',
             address: '',
-            telephone: Number,
-            mobile: Number,
-            fax: Number,
-            code: Number,
-            tax: Number,
-            active: Boolean
+            telephone: '',
+            mobile: '',
+            fax: '',
+            code: '',
+            tax: '',
+            active: Boolean,
+            back: false,
+            processType: ''
         }
     }
      
      handleChange(event) {
-        const { id, value } = event.target
-        console.log('handleChange: ', this.state.name);
-        this.setState({[id]: value })
+        const { name, value } = event.target
+        this.setState({[name]: value })
     }
 
     setLanguage(){
@@ -48,7 +52,83 @@ import { multicastChannel } from 'redux-saga';
         this.setLanguage();
     }
 
+    componentWillReceiveProps(nextProps) {
+        if(this.state.processType == 'save') {
+            this.resultPartner(nextProps.partners);
+        }
+    }
+
+    saveAs = () => {
+        let input = {
+            code: this.state.code,
+            name: this.state.name,
+            address: this.state.address,
+            tel: this.state.tel,
+            tax: this.state.tax,
+            mobile: this.state.mobile,
+            fax: this.state.fax,
+            active: this.state.active
+        };
+        console.log(input);
+        this.setState({processType: 'save'});
+        this.props.partnerAdd(input);
+    }
+
+    resultPartner(data) {
+        this.setState({processType: ''});
+        console.log('error',data)
+        if(data){
+        if(_.has(data,'message')){
+            Swal.fire({
+            type: 'error',
+            title: this.state.Lang['Add Hospital'],
+            text: data.message,
+            allowOutsideClick: false,
+            allowEscapeKey: false
+            });
+        } else {
+            Swal.fire({
+            type: 'error',
+            title: this.state.Lang['Add Hospital'],
+            text: data.message,
+            allowOutsideClick: false,
+            allowEscapeKey: false
+            });
+        }
+        }else{
+        Swal.fire({
+            position: 'center',
+            type: 'success',
+            title: this.state.Lang['Add Hospital'],
+            text: this.state.Lang['Add hospital success.'],
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            timer: 3000,
+            onClose: () => {
+              this.backPage();
+            }
+        }); 
+        }
+    }
+
+    backPage() {
+        this.setState({back: true});
+    }
+
+    checkSave() {
+        if(this.state.code!==''&&this.state.name!==''&&this.state.address!==''){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     render() {
+
+        if(this.state.back) {
+            return <Redirect push to={'/admin/'+this.props.match.path.split('/')[2]} />;
+        }
         return (
             <div>
                 <Row>
@@ -57,89 +137,101 @@ import { multicastChannel } from 'redux-saga';
                             <CardHeader><Lang name="Create Partner" /></CardHeader>
                             <CardBody>
                                 <Row>
-                                    <Col xs="6">
+                                    <Col xs="3">
                                         <FormGroup>
-                                            <Label htmlFor="name">Partner Name</Label>
-                                            <Input type="text" id="name"
-                                                value={this.state.name}
-                                                onChange={event => this.handleChange(event)}
-                                                required
-                                            />
-                                        </FormGroup>
-                                    </Col>
-                                    <Col xs="6">
-                                        <FormGroup>
-                                            <Label htmlFor="name">Address</Label>
-                                            <Input type="text" id="address"
-                                                value={this.state.address}
-                                                onChange={event => this.handleChange(event)}
-                                                required
-                                            />
-                                        </FormGroup>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col xs="4">
-                                        <FormGroup>
-                                            <Label htmlFor="name">Telephone</Label>
-                                            <Input type="text" id="telephone"
-                                                value={this.state.telephone}
-                                                onChange={event => this.handleChange(event)}
-                                                required
-                                            />
-                                        </FormGroup>
-                                    </Col>
-                    
-                                    <Col xs="4">
-                                        <FormGroup>
-                                            <Label htmlFor="name">Mobile Phone</Label>
-                                            <Input type="text" id="mobile"
-                                                value={this.state.mobile}
-                                                onChange={event => this.handleChange(event)}
-                                                required
-                                            />
-                                        </FormGroup>
-                                    </Col>
-
-                                    <Col xs="4">
-                                        <FormGroup>
-                                            <Label htmlFor="name">Fax</Label>
-                                            <Input type="text" id="fax"
-                                                value={this.state.fax}
-                                                onChange={event => this.handleChange(event)}
-                                            />
-                                        </FormGroup>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col xs="4">
-                                        <FormGroup>
-                                            <Label htmlFor="name">Code</Label>
-                                            <Input type="text" id="code"
+                                            <Label htmlFor="name"><Lang name="Partner Code" /></Label>
+                                            <Input type="text" name="code"
                                                 value={this.state.code}
+                                                placeholder={this.state.Lang['Please enter your partner code']}
+                                                onChange={event => this.handleChange(event)}
+                                                required
+                                            />
+                                        </FormGroup>
+                                    </Col>
+                                    <Col xs="3">
+                                        <FormGroup>
+                                            <Label htmlFor="name"><Lang name="Partner Name" /></Label>
+                                            <Input type="text" name="name"
+                                                value={this.state.name}
+                                                placeholder={this.state.Lang['Please enter your partner name']}
+                                                onChange={event => this.handleChange(event)}
+                                                required
+                                            />
+                                        </FormGroup>
+                                    </Col>
+                                    
+                                </Row>
+
+                                <Row>
+                                    <Col xs="6">
+                                        <FormGroup>
+                                            <Label htmlFor="name"><Lang name="Address" /></Label>
+                                            <Input type="textarea" rows='4' name="address"
+                                                value={this.state.address}
+                                                placeholder={this.state.Lang['Please enter your address']}
+                                                onChange={event => this.handleChange(event)}
+                                                required
+                                            />
+                                        </FormGroup>
+                                    </Col>
+                                </Row>
+
+                                <Row>
+                                    <Col xs="3">
+                                        <FormGroup>
+                                            <Label htmlFor="name"><Lang name="tel" /></Label>
+                                            <Input type="text" name="tel"
+                                                value={this.state.tel}
+                                                placeholder={this.state.Lang['Please enter your telephone']}
                                                 onChange={event => this.handleChange(event)}
                                                 required
                                             />
                                         </FormGroup>
                                     </Col>
                     
-                                    <Col xs="4">
+                                    <Col xs="3">
                                         <FormGroup>
-                                            <Label htmlFor="name">Tax</Label>
-                                            <Input type="text" id="tax"
-                                                value={this.state.tax}
+                                            <Label htmlFor="name"><Lang name="mobile" /></Label>
+                                            <Input type="text" name="mobile"
+                                                value={this.state.mobile}
+                                                placeholder={this.state.Lang['Please enter your mobile phone']}
                                                 onChange={event => this.handleChange(event)}
                                                 required
                                             />
                                         </FormGroup>
                                     </Col>
 
-                                    <Col xs="4">
+                                    <Col xs="3">
                                         <FormGroup>
-                                            <Label htmlFor="name">Active</Label>
-                                            <Input type="select" id="active"
+                                            <Label htmlFor="name"><Lang name="fax" /></Label>
+                                            <Input type="text" name="fax"
+                                                value={this.state.fax}
+                                                placeholder={this.state.Lang['Please enter your fax']}
+                                                onChange={event => this.handleChange(event)}
+                                            />
+                                        </FormGroup>
+                                    </Col>
+                                </Row>
+
+                                <Row>
+                                    
+                    
+                                    <Col xs="3">
+                                        <FormGroup>
+                                            <Label htmlFor="name"><Lang name="tax" /></Label>
+                                            <Input type="text" name="tax"
+                                                value={this.state.tax}
+                                                placeholder={this.state.Lang['Please enter your tax']}
+                                                onChange={event => this.handleChange(event)}
+                                                required
+                                            />
+                                        </FormGroup>
+                                    </Col>
+
+                                    <Col xs="3">
+                                        <FormGroup>
+                                            <Label htmlFor="name"><Lang name="Active" /></Label>
+                                            <Input type="select" name="active"
                                                 value={this.state.active}
                                                 onChange={event => this.handleChange(event)}>
                                                     <option value={true}>Yes</option>
@@ -150,7 +242,12 @@ import { multicastChannel } from 'redux-saga';
                                 </Row>
                             </CardBody>
                             <CardFooter>
-                                <Button type="submit" size="sm" color="primary"><i className="fa fa-dot-circle-o"></i> Submit</Button>
+                                {this.checkSave()?
+                                <Button type="submit" onClick={()=>this.saveAs()} color="primary"><i className="fa fa-dot-circle-o"></i> Submit</Button>
+                                :
+                                <Button type="submit" disabled color="primary"><i className="fa fa-dot-circle-o"></i> Submit</Button>
+                            }
+                                
                             </CardFooter>
                         </Card>
                     </Col>
@@ -160,4 +257,10 @@ import { multicastChannel } from 'redux-saga';
     }
 }
 
-export default PartnerAdd;
+function mapStateToProps(state){
+    return {
+        partners: state.partners
+    }
+}
+
+export default connect(mapStateToProps, { partnerAdd, partnerFetch})(PartnerAdd);

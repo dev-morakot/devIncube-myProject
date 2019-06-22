@@ -10,6 +10,15 @@ import _ from 'lodash';
 import history from './history';
 import Loadable from 'react-loadable';
 import i18n from 'i18next';
+
+
+// Firebase.
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+
+
+
 const loading = () => <div className="animated fadeIn pt-3 text-center">Loading...</div>;
 
 // Containers
@@ -25,19 +34,20 @@ class App extends Component {
     super(props);
     this.state = {
       reloadPage: false,
-      loadMaster: false
+      loadMaster: false,
+      isSignedIn: false // Local signed-in state.
+
     }
   }
 
   //WARNING! To be deprecated in React v17. Use componentDidMount instead.
   componentWillMount() {
-    if(localStorage.getItem('auth') === 1) {
-      this._handdleLogged(this.props.auth.info.profile);
-    } else {
-      this._handdleNotLogged();
-    }
-    
-    
+   
+  }
+
+  // Make sure we un-register Firebase observers when the component unmounts.
+  componentWillUnmount() {
+    this.unregisterAuthObserver();
   }
 
   componentDidMount(){ 
@@ -46,36 +56,15 @@ class App extends Component {
     }else{
       i18n.changeLanguage('en');
     }
+
+    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+      (user) => this.setState({isSignedIn: !!user})
+    );
   }
 
-  _handdleLogged() {
-    this.props.checkAuthentication();
-  }
-
-  _handdleNotLogged(err){
-    this.props.logout();
-  }
-
-  _handdleReloadPage(){
-    this.setState({reloadPage: true});
-    if(parseInt(localStorage.getItem('usertype'))===0) {
-      localStorage.setItem('reloadLogin', 1);
-      window.location.reload();
-    }
-  }
-
-  _handleSwitchReleReload(refresh) {
-    if(refresh) {
-      history.push('/');
-      window.location.reload();
-    }
-  }
 
   componentWillReceiveProps(nextProps) {
-   // this._handdleReloadPage();
-    if(_.has(nextProps,'auth.autoRefresh')){
-      this._handleSwitchReleReload(nextProps.auth.autoRefresh);
-    }
+  
   }
 
   render() {
@@ -84,24 +73,19 @@ class App extends Component {
       <HashRouter>
 
           <React.Suspense fallback={loading()}>
-          <Switch>
-              <Route exact path="/login" name="Login Page" component={Login} />
-              
-              <Route path="/" name="Home" render={props => <DefaultLayout {...props}/>} />
-            </Switch>
-           {/* {!this.props.auth.login&&
+            {!this.state.isSignedIn&&
             <Switch>
               <Route exact path="/login" name="Login Page" component={Login} />
               <Route path="/" name="Loading Page" component={LoadingPage} />
               
             </Switch>}
-            {this.props.auth.login&&
+            {this.state.isSignedIn&&
               <Switch>
 
 
               <Route path="/" name="Home" render={props => <DefaultLayout {...props}/>} />
             </Switch>
-            }*/}
+            }
           </React.Suspense>
       </HashRouter>
     );

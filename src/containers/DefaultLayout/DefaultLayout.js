@@ -22,6 +22,11 @@ import navigation from '../../_navAdmin';
 import routes from '../../routes';
 import Loader from './../../components/Loader';
 
+// Firebase.
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+
 const DefaultAside = React.lazy(() => import('./DefaultAside'));
 const DefaultFooter = React.lazy(() => import('./DefaultFooter'));
 const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
@@ -30,7 +35,8 @@ class DefaultLayout extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      accountType: ''
+      accountType: '',
+      isSignedIn: false
     }
   }
 
@@ -42,6 +48,13 @@ class DefaultLayout extends Component {
     } else {
       this.setState({accountType: ''})
     }
+    this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+      (user) => this.setState({isSignedIn: !!user})
+    );
+  }
+
+  componentWillUnmount() {
+    this.unregisterAuthObserver();
   }
   
 
@@ -51,6 +64,7 @@ class DefaultLayout extends Component {
   }
 
   render() {
+    console.log('isSignedIn', this.state.isSignedIn)
     return (
       <div className="app">
       {this.props.loader.loading&&
@@ -87,13 +101,11 @@ class DefaultLayout extends Component {
                         )} />
                     ) : (null);
                   })}
-                  <Redirect from="/" to={'/dashboard'}/>
-                 {/* {!this.props.auth.login&&
+                  {!this.state.isSignedIn&&
                   <Redirect from="/" to="/login" />}
-                  {'facebook'===this.state.accountType&&
+                  {this.state.isSignedIn&&
                    <Redirect from="/" to="/admin/purchaseOrder" />}
-                   {'google'===this.state.accountType&&
-                 <Redirect from="/" to="/admin/purchaseOrder" />} */}
+                  
                 </Switch>
               </Suspense>
             </Container>

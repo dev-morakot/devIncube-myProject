@@ -27,19 +27,19 @@ export const productFetch = () => {
 }
 
 
-export const productAdd = (product) => {
+export const productAddItem = (product) => {
     return dispatch => {
       dispatch({type: LOAER_PROCESSING, playload: {loading: true, text: 'saving'}});
-      axios.post(BACKEND_ENDPOINT+'/products', product,apiHeader()).then(function (response) {
-        axios.get(BACKEND_ENDPOINT+'/products',apiHeader()).then(function (response) {
-          dispatch({type: PRODUCT_ADD_SUCCESS, playload: response.data.data});
+      axios.post(BACKEND_ENDPOINT + '/api/product/create.php', product,apiHeader()).then(function (response) {
+        axios.get(BACKEND_ENDPOINT + '/api/product/read.php',apiHeader()).then(function (res) {
+          dispatch({type: PRODUCT_ADD_SUCCESS, playload: res.data});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         }).catch(function (error) {
-          dispatch({type: PRODUCT_ADD_ERROR, playload: error.response.data});
+          dispatch({type: PRODUCT_ADD_ERROR, playload: error.message});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         });
       }).catch(function (error) {
-        dispatch({type: PRODUCT_ADD_ERROR, playload: error.response.data});
+        dispatch({type: PRODUCT_ADD_ERROR, playload: error.message});
         dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
       });
     }
@@ -48,35 +48,35 @@ export const productAdd = (product) => {
 export const productDelete = (id) => {
     return dispatch => {
       dispatch({type: LOAER_PROCESSING, playload: {loading: true, text: 'deleting'}});
-      axios.delete(BACKEND_ENDPOINT + '/products/delete/' + id,apiHeader()).then(function(res) {
-        axios.get(BACKEND_ENDPOINT + '/products',apiHeader()).then(function(res) {
-          dispatch({type: PRODUCT_DELETE_SUCCESS, playload: res.data.data});
+      axios.post(BACKEND_ENDPOINT + '/api/product/delete.php', id,apiHeader()).then(function(res) {
+        axios.get(BACKEND_ENDPOINT + '/api/product/read.php',apiHeader()).then(function(res) {
+          dispatch({type: PRODUCT_DELETE_SUCCESS, playload: res.data});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         }).catch(function (error) {
-          dispatch({type: PRODUCT_DELETE_ERROR, playload: error.response.data});
+          dispatch({type: PRODUCT_DELETE_ERROR, playload: error});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         });
       }).catch(function (error) {
-        dispatch({type: PRODUCT_DELETE_ERROR, playload: error.response.data});
+        dispatch({type: PRODUCT_DELETE_ERROR, playload: error});
         dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
       });
       
     }
 }
   
-export const productUpdate = (id,product) => {
+export const productUpdate = (product) => {
     return dispatch => {
       dispatch({type: LOAER_PROCESSING, playload: {loading: true, text: 'updating'}});
-      axios.put(BACKEND_ENDPOINT + '/products/update/' + id, product,apiHeader()).then((res) => {
-        axios.get(BACKEND_ENDPOINT + '/products',apiHeader()).then((res) => {
-          dispatch({type: PRODUCT_UPDATE_SUCCESS, playload: res.data.data});
+      axios.post(BACKEND_ENDPOINT + '/api/product/update.php', product,apiHeader()).then((res) => {
+        axios.get(BACKEND_ENDPOINT + '/api/product/read.php',apiHeader()).then((res) => {
+          dispatch({type: PRODUCT_UPDATE_SUCCESS, playload: res.data});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         }).catch((error) => {
-          dispatch({type: PRODUCT_UPDATE_ERROR, playload: error.response.data});
+          dispatch({type: PRODUCT_UPDATE_ERROR, playload: error.response});
           dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
         });
       }).catch((error) => {
-        dispatch({type: PRODUCT_UPDATE_ERROR, playload: error.response.data});
+        dispatch({type: PRODUCT_UPDATE_ERROR, playload: error.response});
         dispatch({type: LOAER_COMPLETED, playload: {loading: false, text: ''}});
       });
       

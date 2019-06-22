@@ -4,13 +4,15 @@ import AuthReducer from './AuthReducer';
 import ProductReducer from './ProductReducer';
 import PartnerReducer from './PartnerReducer';
 import LoaderReducer from './LoaderReducer';
+import PurchaseOrderReducer from './PurchaseOrderReducer';
 
 const rootReducers = combineReducers({
     auth: AuthReducer,
     loader: LoaderReducer,
     uploads: UploadReducer,
     products: ProductReducer,
-    partners: PartnerReducer
+    partners: PartnerReducer,
+    purchaseOrder: PurchaseOrderReducer
 });
 
 export default rootReducers;
