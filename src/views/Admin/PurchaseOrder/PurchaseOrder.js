@@ -20,7 +20,7 @@ import { formatDate, numberWithCommas, formatDateTime } from './../../../lib/_fu
               {name: 'code', sorting: 'sortingCode', label: 'Purchase Code'},
               {name: 'orderDate', sorting: 'sortingOrderDate', label: 'Order Date'},
               {name: 'shipment' , sorting: 'sortingShipment', label: 'Shipment' },
-              {name: 'supplier', sorting: 'sortingSupplier', label: 'Supplier' },
+              {name: 'supplier_name', sorting: 'sortingSupplier', label: 'Supplier' },
               {name: 'incoterms', sorting: 'sortingIncoterms', label: 'Incoterms'},
               {name: 'transportType', sorting: 'sortingTransport', label: 'Transport Type'},
               {name: 'destinationPort', sorting: 'sortingPort', label: 'Port'},
@@ -44,7 +44,7 @@ import { formatDate, numberWithCommas, formatDateTime } from './../../../lib/_fu
                 item['code'] = (_.has(item,'code')&&item.code !==null&&item.code!=='null')?item.code: '-';
                 item['orderDate'] = (_.has(item,'orderDate')&&item.orderDate!==null&&item.orderDate!=='null'&&item.orderDate!=='')?item.orderDate: 'null';
                 item['shipment'] = (_.has(item,'shipment')&&item.shipment!==null&&item.shipment!==''&&item.shipment!=='null')?item.shipment:'-';
-                item['supplier'] = this.supplier(item);
+                item['supplier_name'] = this.supplier(item);
                 item['incoterms'] = (_.has(item,'incoterms')&&item.incoterms!==null&&item.incoterms!==''&&item.incoterms!=='null')?item.incoterms:'-';
                 item['transportType'] = (_.has(item,'transportType')&&item.transportType!==null&&item.transportType!==''&&item.transportType!=='null')?item.transportType:'-';
                 item['destinationPort'] = (_.has(item,'destinationPort')&&item.destinationPort!==null&&item.destinationPort!==''&&item.destinationPort!=='null')?item.destinationPort:'-';

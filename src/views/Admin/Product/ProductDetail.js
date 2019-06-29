@@ -109,26 +109,7 @@ import Swal from 'sweetalert2';
 
       resultDelete(message) {
         this.setState({processType: ''});
-        if(_.has(message,'error')||_.has(message,'errors')){
-          if(_.has(message,'error')){
-            Swal.fire({
-              type: 'error',
-              title: this.state.Lang['Delete Hospital'],
-              text: message.error,
-              allowOutsideClick: false,
-              allowEscapeKey: false
-            });
-          } else {
-            Swal.fire({
-              type: 'error',
-              title: this.state.Lang['Delete Hospital'],
-              text: message.errors[0].msg,
-              allowOutsideClick: false,
-              allowEscapeKey: false
-            });
-          }
-        } else {
-          Swal.fire({
+        Swal.fire({
             position: 'center',
             type: 'success',
             title: this.state.Lang['Delete success'],
@@ -141,7 +122,6 @@ import Swal from 'sweetalert2';
               this.backPage();
             }
           }); 
-        }
       }
 
     backPage() {
@@ -175,13 +155,13 @@ import Swal from 'sweetalert2';
                             <CardBody>
 
                                 <ListGroup>
-                                    <ListGroupItem tag="a" href="#" action><Lang name="Product Code" />: {this.state.data.code}</ListGroupItem>
-                                    <ListGroupItem tag="a" href="#" action><Lang name="Product Name" />:  {this.state.data.name}</ListGroupItem>
-                                    <ListGroupItem tag="a" href="#" action><Lang name="Category" />:  {this.state.data.category}</ListGroupItem>
-                                    <ListGroupItem tag="a" href="#" action><Lang name="Price" />: {this.state.data.price}</ListGroupItem>
-                                    <ListGroupItem disabled tag="a" href="#" action><Lang name="Unit" />: {this.state.data.unit}</ListGroupItem>
-                                    <ListGroupItem disabled tag="a" href="#" action><Lang name="Active" />: {this.state.data.active}</ListGroupItem>
-                                    <ListGroupItem disabled tag="a" href="#" action><Lang name="Create Date" />: {formatDateTime(this.state.data.createAt)}</ListGroupItem>
+                                    <ListGroupItem  action><Lang name="Product Code" />: {this.state.data.code}</ListGroupItem>
+                                    <ListGroupItem action><Lang name="Product Name" />:  {this.state.data.name}</ListGroupItem>
+                                    <ListGroupItem  action><Lang name="Category" />:  {this.state.data.category}</ListGroupItem>
+                                    <ListGroupItem  action><Lang name="Price" />: {this.state.data.price}</ListGroupItem>
+                                    <ListGroupItem action><Lang name="Unit" />: {this.state.data.unit}</ListGroupItem>
+                                    <ListGroupItem action><Lang name="Active" />: {this.state.data.active}</ListGroupItem>
+                                    <ListGroupItem  action><Lang name="Create Date" />: {formatDateTime(this.state.data.createAt)}</ListGroupItem>
                                 </ListGroup>
                             </CardBody>
                         </Card>

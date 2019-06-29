@@ -5,6 +5,7 @@ import ProductReducer from './ProductReducer';
 import PartnerReducer from './PartnerReducer';
 import LoaderReducer from './LoaderReducer';
 import PurchaseOrderReducer from './PurchaseOrderReducer';
+import PurhcaseOrderLineReducer from './PurchaseOrderLineReducer';
 
 const rootReducers = combineReducers({
     auth: AuthReducer,
@@ -12,7 +13,8 @@ const rootReducers = combineReducers({
     uploads: UploadReducer,
     products: ProductReducer,
     partners: PartnerReducer,
-    purchaseOrder: PurchaseOrderReducer
+    purchaseOrder: PurchaseOrderReducer,
+    purchaseOrderLine: PurhcaseOrderLineReducer
 });
 
 export default rootReducers;

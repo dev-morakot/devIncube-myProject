@@ -150,7 +150,7 @@ class Login extends Component {
   render() {
 
     if(this.state.isSignedIn) {
-        return <Redirect push to={'/dashboard'}/>;
+        return <Redirect push to={'/admin/purchaseOrder'}/>;
     }
   
     return (

@@ -18,8 +18,8 @@ import i18n from './../../../i18n';
 import _ from 'lodash';
 import Select from 'react-select';
 import { connect } from 'react-redux';
-import { purchaseOrderAdd, partnerFetch, productFetch} from './../../../actions';
 import Swal from 'sweetalert2';
+import { partnerFetch,purchaseOrderFetch, purchaseOrderLineUpdate, productFetch,purchaseOrderLineDelete, purchaseOrderUpdate, purchaseOrderLineFetch, loadCompleted, loadProcessing } from './../../../actions';
 
 function sumProperty(arr, type) {
     return arr.reduce((total, obj) => {
@@ -30,18 +30,22 @@ function sumProperty(arr, type) {
     }, 0);
   }
 
-class PurchaseOrderAdd extends Component {
+class PurchaseOrderEdit extends Component {
     constructor(props) {
         super(props);
         this.state = {
             arr: [],
-            Lang: {},
             product_code: '',
             product_name: '',
-            currency: 'THB',
+            id: this.props.match.params.id,
+            pkColumn: 'id',
+            Lang: {},
             modal: false,
             large: false,
             primary: false,
+            edit: false,
+            data: {},
+            back: false,
             mfg: '',
             productName: '',
             qty: 0,
@@ -52,7 +56,7 @@ class PurchaseOrderAdd extends Component {
             discount: 0,
             line_amount_total: 0,
             incotermVersion: 'INCOTERMS ® 2010',
-            back: false
+            poline: {}
         }
       }
 
@@ -61,17 +65,148 @@ class PurchaseOrderAdd extends Component {
           primary: !this.state.primary,
         });
       }
+
+    poEdit = (item) => {
+        console.log(item);
+        let poline = this.state.poline;
+        poline.msg = 'update';
+        poline.id = item.id;
+        poline.product_id = item.product_id;
+        poline.product_code = item.product_code;
+        poline.product_name = item.product_name;
+        poline.qty = item.qty;
+        poline.price = item.price;
+        poline.unit = item.unit;
+        poline.description = item.description;
+        poline.mfg = item.mfg;
+        poline.packSize = item.packSize;
+        this.setState({
+            edit: !this.state.edit,
+            poline: poline
+        });
+    }
     
     setLanguage(){
         if(_.has(i18n,'language')){
           this.setState({Lang: i18n.store.data[i18n.language].translation});
         }
       }
+
+    setData(data) {
+        console.log('setData',data);
+        let po = this.state.data;
+        po.id = data.id;
+        po.orderDate = data.orderDate;
+        po.contactPerson = data.contactPerson;
+        po.supplier = data.supplier;
+        po.note = data.note;
+        po.transportType = data.transportType;
+        po.paymentCondition = data.paymentCondition;
+        po.destinationPort = data.destinationPort;
+        po.paymentTerms = data.paymentTerms;
+        po.incotermVersion = data.incotermVersion;
+        po.currency = data.currency;
+        po.incoterms = data.incoterms;
+        po.invoiceNo = data.invoiceNo;
+        po.salesContractNo = data.salesContractNo;
+        po.shipment = data.shipment;
+        po.commercialInvoice = data.commercialInvoice;
+        po.certHealth = data.certHealth;
+        po.shippingAdvice = data.shippingAdvice;
+        po.packingList = data.packingList;
+        po.certOrigin = data.certOrigin;
+        po.coa = data.coa;
+        po.formE = data.formE;
+        po.originBL = data.originBL;
+        po.insurance = data.insurance;
+        po.formAI = data.formAI;
+        po.awb = data.awb;
+        po.reqDocNote = data.reqDocNote;
+        po.packingTwo = data.packingTwo;
+        po.packingOne = data.packingOne;
+        po.sampleTwo = data.sampleTwo;
+        po.sampleOne = data.sampleOne;
+        po.shippingMark = data.shippingMark;
+        po.claimOne = data.claimOne;
+        po.claimTwo = data.claimTwo;
+        po.amount_total = data.amount_total;
+        this.setState({data: po});
+    }
     
     componentWillMount(){
+        const pkColumn = this.state.pkColumn;
+        const id = this.state.id;
+        if(_.findIndex(this.props.purchaseOrder.data, function(o) { return o[pkColumn] == id; })>=0){
+            this.setData(this.props.purchaseOrder.data[_.findIndex(this.props.purchaseOrder.data, function(o) { return o[pkColumn] == id;})]);
+            this.props.purchaseOrderLineFetch(this.state.data.id);
+        } else {
+            this.props.purchaseOrderFetch();
+        }
         this.setLanguage();
         this.props.partnerFetch();
         this.props.productFetch();
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(!_.has(this.state.data,'id')&&nextProps.purchaseOrder.data.length>0){
+            const pkColumn = this.state.pkColumn;
+            const id = this.state.id;
+            if(_.findIndex(nextProps.purchaseOrder.data, function(o) { return o[pkColumn] == id; })>=0){
+                this.setData(nextProps.purchaseOrder.data[_.findIndex(nextProps.purchaseOrder.data, function(o) { return o[pkColumn] == id;})]);
+                this.props.purchaseOrderLineFetch(this.state.data.id);
+            }
+        }
+        this.setState({arr: nextProps.purchaseOrderLine.data});
+        if(this.state.processType == 'save') {
+            this.resultSaveProduct(nextProps.purchaseOrder);
+        }
+        if(this.state.processType == 'delete') {
+            this.resultDelete(nextProps.purchaseOrder);
+        }
+
+    }
+
+    resultSaveProduct(data) {
+        this.setState({processType: ''});
+        console.log('error',data)
+        Swal.fire({
+            position: 'center',
+            type: 'success',
+            title: this.state.Lang['Update Purchase Order'],
+            text: this.state.Lang['Update purchase order success.'],
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            timer: 3000,
+            onClose: () => {
+              this.backPage();
+            }
+        }); 
+    }
+
+    resultDelete(data) {
+        this.setState({processType: ''});
+        console.log('error',data)
+        Swal.fire({
+            position: 'center',
+            type: 'success',
+            title: this.state.Lang['Delete line'],
+            text: this.state.Lang['Delete success.'],
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            timer: 3000,
+            onClose: () => {
+                
+            }
+        }); 
+    }
+
+    handleEditChange = (e) => {
+        const {name, value} = e.target;
+        let poline = this.state.poline;
+        poline[name] = value;
+        this.setState({poline: poline});
     }
 
     handleChange = (e) => {
@@ -79,7 +214,6 @@ class PurchaseOrderAdd extends Component {
         this.setState({[name]: value})
 
         this.checkProduct(name, value);
-        
     }
 
     checkProduct = (name, value) => {
@@ -121,7 +255,9 @@ class PurchaseOrderAdd extends Component {
 
     logChange = (e) => {
         const {name, value} = e.target;
-        this.setState({[name]: value});
+        const data = this.state.data;
+        data[name] = value;
+        this.setState({data});
     }
 
    
@@ -135,6 +271,16 @@ class PurchaseOrderAdd extends Component {
        
     }
 
+    sumTotalEdit = () => {
+        if(this.state.poline.discount !== undefined && this.state.poline.discount !== '') {
+            return ( parseFloat(this.state.poline.price * this.state.poline.qty) - parseFloat(this.state.poline.discount)).toFixed(2)
+        } else {
+           return ( parseFloat(this.state.poline.price * this.state.poline.qty)).toFixed(2)
+        }
+        
+       
+    }
+
     checkOrderLine = () => {
         if(this.state.price!==''&&this.state.unit!==''&&this.state.product_id!==''&&this.state.qty!=='') {
             return true;
@@ -143,11 +289,32 @@ class PurchaseOrderAdd extends Component {
         }
     }
 
-    handleRemove = (i) => {
-        const arr = [...this.state.arr]
+    handleRemoveInsert = (i) => {
+        const arr = [...this.state.arr];
+        arr.splice(i, 1);
+        this.setState({arr});
+    }
+
+    handleRemove = (i, item) => {
+        let id = {
+            id: item.id
+        }
+        this.setState({processType: 'delete'});
+        this.props.purchaseOrderLineDelete(id);
+        setTimeout(() => {
+            const arr = [...this.state.arr];
+            arr.splice(i, 1);
+            this.setState({arr});
+            this.total();
+        }, 3000);
+        /*const arr = [...this.state.arr]
         arr.splice(i, 1)
-        this.setState({arr})
-        this.total();
+
+        this.setState({arr}, () => {
+            this.props.purchaseOrderLineDelete(id);
+        });*/
+       
+        
     }
 
 
@@ -159,12 +326,14 @@ class PurchaseOrderAdd extends Component {
             product_name: this.state.product_name,
             mfg: this.state.mfg,
             product_id: this.state.product_id,
+            productName: this.state.productName,
             packSize: this.state.packSize,
             description: this.state.description,
             price: parseFloat(this.state.price),
             unit: this.state.unit,
             qty: parseFloat(this.state.qty),
-            discount: parseFloat(this.state.discount)
+            discount: parseFloat(this.state.discount),
+            msg: 'insert'
         };
         if(this.state.discount !== undefined && this.state.discount !== '') {
             item['line_amount_total'] = ( parseFloat(this.state.price * this.state.qty) - parseFloat(this.state.discount)).toFixed(2)
@@ -188,6 +357,7 @@ class PurchaseOrderAdd extends Component {
             unit: '',
             discount: 0,
             qty: 0,
+            msg: '',
             line_amount_total: 0.00
         })
         this.setState({
@@ -195,164 +365,204 @@ class PurchaseOrderAdd extends Component {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.state.processType == 'save') {
-            this.resultSaveProduct(nextProps.purchaseOrder);
+    save = () => {
+        
+        let input = {
+            amount_total: this.total(),
+            id: this.state.data.id
+        };
+        if(this.state.data.supplier !== undefined) {
+            input['supplier'] = this.state.data.supplier;
         }
+        if(this.state.data.orderDate !== undefined) {
+            input['orderDate'] = this.state.data.orderDate;
+        }
+        if(this.state.data.contactPerson !== undefined) {
+            input['contactPerson'] = this.state.data.contactPerson;
+        }
+        if(this.state.arr.length >=0) {
+            input['purchaseOrderLine'] = this.state.arr;
+        }
+        if(this.state.data.transportType !== undefined) {
+            input['transportType'] = this.state.data.transportType;
+        }
+        if(this.state.data.paymentCondition !== undefined) {
+            input['paymentCondition'] = this.state.data.paymentCondition;
+        }
+        if(this.state.data.destinationPort !== undefined) {
+            input['destinationPort'] = this.state.data.destinationPort;
+        }
+        if(this.state.data.paymentTerms !== undefined) {
+            input['paymentTerms'] = this.state.data.paymentTerms;
+        }
+        if(this.state.data.incotermVersion !== undefined) {
+            input['incotermVersion'] = this.state.data.incotermVersion;
+        }
+        if(this.state.data.currency !== undefined) {
+            input['currency'] = this.state.data.currency;
+        }
+        if(this.state.data.incoterms !== undefined) {
+            input['incoterms'] = this.state.data.incoterms;
+        }
+        if(this.state.data.invoiceNo !== undefined) {
+            input['invoiceNo'] = this.state.data.invoiceNo;
+        }
+        if(this.state.data.salesContractNo !== undefined) {
+            input['salesContractNo'] = this.state.data.salesContractNo;
+        }
+        if(this.state.data.shipment !== undefined) {
+            input['shipment'] = this.state.data.shipment;
+        }
+        if(this.state.data.note !== undefined) {
+            input['note'] = this.state.data.note;
+        }
+    
+        if(this.state.data.commercialInvoice !== undefined) {
+            input['commercialInvoice'] = this.state.data.commercialInvoice;
+        }
+        if(this.state.data.certHealth !== undefined) {
+            input['certHealth'] = this.state.data.certHealth;
+        }
+        if(this.state.data.shippingAdvice !== undefined) {
+            input['shippingAdvice'] = this.state.data.shippingAdvice;
+        }
+        if(this.state.data.packingList !== undefined) {
+            input['packingList'] = this.state.data.packingList;
+        }
+        if(this.state.data.certOrigin !== undefined) {
+            input['certOrigin'] = this.state.data.certOrigin;
+        }
+        if(this.state.data.telexRelease !== undefined) {
+            input['telexRelease'] = this.state.data.telexRelease;
+        }
+        if(this.state.data.coa !== undefined) {
+            input['coa'] = this.state.data.coa;
+        }
+        if(this.state.data.formE !== undefined) {
+            input['formE'] = this.state.data.formE;
+        }
+        if(this.state.data.originBL !== undefined) {
+            input['originBL'] = this.state.data.originBL;
+        }
+        if(this.state.data.insurance !== undefined) {
+            input['insurance'] = this.state.data.insurance;
+        }
+
+        if(this.state.data.formAI !== undefined) {
+            input['formAI'] = this.state.data.formAI;
+        }
+        if(this.state.data.awb !== undefined) {
+            input['awb'] = this.state.data.awb;
+        }
+        if(this.state.data.reqDocNote !== undefined) {
+            input['reqDocNote'] = this.state.data.reqDocNote;
+        }
+        if(this.state.data.packingOne !== undefined) {
+            input['packingOne'] = this.state.data.packingOne;
+        }
+        if(this.state.data.packingTwo !== undefined) {
+            input['packingTwo'] = this.state.data.packingTwo;
+        }
+        if(this.state.data.sampleOne !== undefined) {
+            input['sampleOne'] = this.state.data.sampleOne;
+        }
+        if(this.state.data.sampleTwo !== undefined) {
+            input['sampleTwo'] = this.state.data.sampleTwo;
+        }
+        if(this.state.data.shippingMark !== undefined) {
+            input['shippingMark'] = this.state.data.shippingMark;
+        }
+
+        if(this.state.data.claimOne !== undefined) {
+            input['claimOne'] = this.state.data.claimOne;
+        }
+        if(this.state.data.claimTwo !== undefined) {
+            input['claimTwo'] = this.state.data.claimTwo;
+        }
+        console.log(input);
+        this.setState({processType: 'save'});
+       this.props.purchaseOrderUpdate(input);
+    }
+
+
+    editAs = () => {
+        
+        const item = { 
+            product_code: this.state.poline.product_code,
+            product_name: this.state.poline.product_name,
+            mfg: this.state.poline.mfg,
+            product_id: this.state.poline.product_id,
+            id: this.state.poline.id,
+            packSize: this.state.poline.packSize,
+            description: this.state.poline.description,
+            price: parseFloat(this.state.poline.price),
+            unit: this.state.poline.unit,
+            qty: parseFloat(this.state.poline.qty),
+            discount: parseFloat(this.state.poline.discount),
+            msg: 'update'
+        };
+        if(this.state.poline.discount !== undefined && this.state.poline.discount !== '') {
+            item['line_amount_total'] = ( parseFloat(this.state.poline.price * this.state.poline.qty) - parseFloat(this.state.poline.discount)).toFixed(2)
+            
+        } else {
+            item['line_amount_total'] = ( parseFloat(this.state.poline.price * this.state.poline.qty)).toFixed(2)
+        }
+        this.setState(state => {
+            const arr = state.arr.map((v,k) => {
+                let a = v;
+                a.line_amount_total = item.line_amount_total;
+                a.msg = "update";
+                a.product_code = item.product_code;
+                a.product_name = item.product_name;
+                a.product_id = item.product_id;
+                a.qty = item.qty;
+                a.price = item.price;
+                a.unit = item.unit;
+                a.mfg = item.mfg;
+                a.description = item.description;
+                a.packSize  = item.packSize;
+                a.id = item.id;
+                a.discount = item.discount;
+                return  a;
+                
+            })
+           
+        })
+        
+       
+        this.setState({
+            edit: !this.state.edit,
+        });
+    }
+
+    
+    total = () => {
+       // if(this.state.data.amount_total !== ''&&this.state.data.amount_total!=='null'&&this.state.data.amount_total!== undefined){
+         //   return this.state.data.amount_total;
+        //} else {
+            return this.state.arr
+            .map((obj) => { return parseFloat(obj.line_amount_total); })
+            .reduce((prev, next) => { 
+                
+                return prev += next; 
+                
+            }, 0.00);
+       // }
+        
+
+        
     }
 
     backPage() {
         this.setState({back: true});
     }
 
-    resultSaveProduct(data) {
-        this.setState({processType: ''});
-        console.log('error',data)
-        Swal.fire({
-            position: 'center',
-            type: 'success',
-            title: this.state.Lang['Add Purchase Order'],
-            text: this.state.Lang['Add purchase order success.'],
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            timer: 3000,
-            onClose: () => {
-              this.backPage();
-            }
-        }); 
-    }
-
-    save = () => {
-        
-        let input = {
-            amount_total: this.total()
-        };
-        if(this.state.supplier !== undefined) {
-            input['supplier'] = this.state.supplier;
-        }
-        if(this.state.orderDate !== undefined) {
-            input['orderDate'] = this.state.orderDate;
-        }
-        if(this.state.contactPerson !== undefined) {
-            input['contactPerson'] = this.state.contactPerson;
-        }
-        if(this.state.arr.length >=0) {
-            input['purchaseOrderLine'] = this.state.arr;
-        }
-        if(this.state.transportType !== undefined) {
-            input['transportType'] = this.state.transportType;
-        }
-        if(this.state.paymentCondition !== undefined) {
-            input['paymentCondition'] = this.state.paymentCondition;
-        }
-        if(this.state.destinationPort !== undefined) {
-            input['destinationPort'] = this.state.destinationPort;
-        }
-        if(this.state.paymentTerms !== undefined) {
-            input['paymentTerms'] = this.state.paymentTerms;
-        }
-        if(this.state.incotermVersion !== undefined) {
-            input['incotermVersion'] = this.state.incotermVersion;
-        }
-        if(this.state.currency !== undefined) {
-            input['currency'] = this.state.currency;
-        }
-        if(this.state.incoterms !== undefined) {
-            input['incoterms'] = this.state.incoterms;
-        }
-        if(this.state.invoiceNo !== undefined) {
-            input['invoiceNo'] = this.state.invoiceNo;
-        }
-        if(this.state.salesContractNo !== undefined) {
-            input['salesContractNo'] = this.state.salesContractNo;
-        }
-        if(this.state.shipment !== undefined) {
-            input['shipment'] = this.state.shipment;
-        }
-        if(this.state.note !== undefined) {
-            input['note'] = this.state.note;
-        }
-    
-        if(this.state.commercialInvoice !== undefined) {
-            input['commercialInvoice'] = this.state.commercialInvoice;
-        }
-        if(this.state.certHealth !== undefined) {
-            input['certHealth'] = this.state.certHealth;
-        }
-        if(this.state.shippingAdvice !== undefined) {
-            input['shippingAdvice'] = this.state.shippingAdvice;
-        }
-        if(this.state.packingList !== undefined) {
-            input['packingList'] = this.state.packingList;
-        }
-        if(this.state.certOrigin !== undefined) {
-            input['certOrigin'] = this.state.certOrigin;
-        }
-        if(this.state.telexRelease !== undefined) {
-            input['telexRelease'] = this.state.telexRelease;
-        }
-        if(this.state.coa !== undefined) {
-            input['coa'] = this.state.coa;
-        }
-        if(this.state.formE !== undefined) {
-            input['formE'] = this.state.formE;
-        }
-        if(this.state.originBL !== undefined) {
-            input['originBL'] = this.state.originBL;
-        }
-        if(this.state.insurance !== undefined) {
-            input['insurance'] = this.state.insurance;
-        }
-
-        if(this.state.formAI !== undefined) {
-            input['formAI'] = this.state.formAI;
-        }
-        if(this.state.awb !== undefined) {
-            input['awb'] = this.state.awb;
-        }
-        if(this.state.reqDocNote !== undefined) {
-            input['reqDocNote'] = this.state.reqDocNote;
-        }
-        if(this.state.packingOne !== undefined) {
-            input['packingOne'] = this.state.packingOne;
-        }
-        if(this.state.packingTwo !== undefined) {
-            input['packingTwo'] = this.state.packingTwo;
-        }
-        if(this.state.sampleOne !== undefined) {
-            input['sampleOne'] = this.state.sampleOne;
-        }
-        if(this.state.sampleTwo !== undefined) {
-            input['sampleTwo'] = this.state.sampleTwo;
-        }
-        if(this.state.shippingMark !== undefined) {
-            input['shippingMark'] = this.state.shippingMark;
-        }
-
-        if(this.state.claimOne !== undefined) {
-            input['claimOne'] = this.state.claimOne;
-        }
-        if(this.state.claimTwo !== undefined) {
-            input['claimTwo'] = this.state.claimTwo;
-        }
-        console.log(input);
-        this.setState({processType: 'save'});
-        this.props.purchaseOrderAdd(input);
-    }
-
-    
-    total = () => {
-        return this.state.arr
-        .map((obj) => { return parseFloat(obj.line_amount_total); })
-        .reduce((prev, next) => { 
-            
-            return prev += next; 
-            
-        }, 0.00);
-
-        
-    }
+    handdlePatientToggleChange = e => {
+        const { name, value } = e.target;
+        let data = this.state.data;
+        data[name] = this.state.data[name] ? '' : value;
+        this.setState({ data: data });
+      }
 
     cancel = () => {
         this.setState({back: true});
@@ -376,18 +586,15 @@ class PurchaseOrderAdd extends Component {
                                     <FormGroup row className="my-0">
                                         <Col xs="4">
                                         <FormGroup>
-                                            <Label><Lang name="supplier" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="supplier" value={this.state.supplier} onChange={e=>this.logChange(e)}  required >
-                                                <option value="">{this.state.Lang['--- select supplier ---']}</option>
-                                                {Array.isArray(this.props.partners.data) && this.props.partners.data.filter(item => {
-                                                    return item.active === '1' || item.active === 1
-                                                })
-                                                
-                                                .map((item,i) => {
+                                            <Label><Lang name="Supplier" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Input type="select" name="supplier" value={this.state.data.supplier} onChange={e=>this.logChange(e)}  required >
+                                            <option value="">{this.state.Lang['--- select supplier ---']}</option>
+                                                {Array.isArray(this.props.partners.data) && this.props.partners.data.map((item,i) => {
                                                    return (
                                                         <option value={item.id}>{item.name}</option>
                                                    )
                                                })}
+                                                
                                             </Input>
                                         
                                         </FormGroup>
@@ -395,7 +602,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Order Date" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="date" name="orderDate" value={this.state.orderDate} onChange={e=>this.logChange(e)} required/>
+                                            <Input type="date" name="orderDate" value={this.state.data.orderDate} onChange={e=>this.logChange(e)} required/>
                                         
                                         </FormGroup>
                                         </Col>
@@ -405,14 +612,14 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Contact Person" />  </Label>
-                                            <Input type="text" name="contactPerson" value={this.state.contactPerson} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your contact person']} />
+                                            <Input type="text" name="contactPerson" value={this.state.data.contactPerson} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your contact person']} />
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Transport Type" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="transportType" value={this.state.transportType} onChange={e=>this.logChange(e)}  required>
+                                            <Input type="select" name="transportType" value={this.state.data.transportType} onChange={e=>this.logChange(e)}  required>
                                                 <option value="">{this.state.Lang['--- select transport type ---']}</option>
                                                 <option value="BY SEA">BY SEA</option>
                                                 <option value="BY AIR">BY AIR</option>
@@ -427,7 +634,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Payment Condition" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="paymentCondition" value={this.state.paymentCondition} onChange={e=>this.logChange(e)}  required >
+                                            <Input type="select" name="paymentCondition" value={this.state.data.paymentCondition} onChange={e=>this.logChange(e)}  required >
                                                 <option value="">{this.state.Lang['--- select payment condition ---']}</option>
                                                 <option value="L/C">L/C</option>
                                                 <option value="TT">TT</option>
@@ -440,7 +647,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Destination Port" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="destinationPort" value={this.state.destinationPort} onChange={e=>this.logChange(e)} required>
+                                            <Input type="select" name="destinationPort" value={this.state.data.destinationPort} onChange={e=>this.logChange(e)} required>
                                                 <option value="">{this.state.Lang['--- select destination port ---']}</option>
                                                 <option value="P.A.T Bangkok Thailand(Port Authority of Thailand)">P.A.T Bangkok Thailand(Port Authority of Thailand)</option>
                                                 <option value="Lat Krabang Port, Thailand">Lat Krabang Port, Thailand</option>
@@ -456,7 +663,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Payment Terms" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="paymentTerms" value={this.state.paymentTerms} onChange={e=>this.logChange(e)}  required >
+                                            <Input type="select" name="paymentTerms" value={this.state.data.paymentTerms} onChange={e=>this.logChange(e)}  required >
                                                 <option value="">{this.state.Lang['--- select payment terms ---']}</option>
                                                 <option value="100% In Advance">100% In Advance</option>
                                                 <option value="In Advance/After received copy B/L 30%/70%">In Advance/After received copy B/L 30%/70%</option>
@@ -485,7 +692,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Incoterm Version" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="text" name="incotermVersion" value={this.state.incotermVersion} onChange={e=>this.logChange(e)}/>
+                                            <Input type="text" name="incotermVersion" value={this.state.data.incotermVersion} onChange={e=>this.logChange(e)}/>
                                         
                                         </FormGroup>
                                         </Col>
@@ -494,8 +701,8 @@ class PurchaseOrderAdd extends Component {
                                     <FormGroup row className="my-0">
                                         <Col xs="4">
                                         <FormGroup>
-                                            <Label><Lang name="Currency" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="currency" value={this.state.currency} onChange={e=>this.logChange(e)}  required >
+                                            <Label><Lang name="Currency Unit" />  <span style={{color: 'red'}}>*</span></Label>
+                                            <Input type="select" name="currency" value={this.state.data.currency} onChange={e=>this.logChange(e)}  required >
                                                 <option value="THB">THB</option>
                                                 <option value="USD">USD</option>
                                                 <option value="EUR">EUR</option>
@@ -506,7 +713,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Incoterms" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="select" name="incoterms" value={this.state.incoterms} onChange={e=>this.logChange(e)} required >
+                                            <Input type="select" name="incoterms" value={this.state.data.incoterms} onChange={e=>this.logChange(e)} required >
                                                 <option value="">{this.state.Lang['--- select incoterms ---']}</option>
                                                 <option value="EXW">EXW</option>
                                                 <option value="FCA">FCA</option>
@@ -534,14 +741,14 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Invoice No" />  </Label>
-                                            <Input type="text" name="invoiceNo" value={this.state.invoiceNo} onChange={e=>this.logChange(e)} placeholder={this.state.Lang['Please enter your invoice']} required/>
+                                            <Input type="text" name="invoiceNo" value={this.state.data.invoiceNo} onChange={e=>this.logChange(e)} placeholder={this.state.Lang['Please enter your invoice']} required/>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">    
                                         <FormGroup>
                                             <Label><Lang name="Sales Contract No" />  </Label>
-                                            <Input type="text" name="salesContractNo" value={this.state.salesContractNo} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your sale contract']}/>
+                                            <Input type="text" name="salesContractNo" value={this.state.data.salesContractNo} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your sale contract']}/>
                                         
                                         </FormGroup>
                                         </Col>
@@ -553,14 +760,14 @@ class PurchaseOrderAdd extends Component {
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Shipment Info" />  <span style={{color: 'red'}}>*</span></Label>
-                                            <Input type="textarea" rows='4' name="shipment" value={this.state.shipment} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your shipment']} required/>
+                                            <Input type="textarea" rows='4' name="shipment" value={this.state.data.shipment} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your shipment']} required/>
                                         
                                         </FormGroup>
                                         </Col>
                                         <Col xs="4">
                                         <FormGroup>
                                             <Label><Lang name="Notes" /> </Label>
-                                            <Input type="textarea" rows='4' name="note" value={this.state.note} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your note']} />
+                                            <Input type="textarea" rows='4' name="note" value={this.state.data.note} onChange={e=>this.logChange(e)}  placeholder={this.state.Lang['Please enter your note']} />
                                         
                                         </FormGroup>
                                         </Col>
@@ -598,19 +805,26 @@ class PurchaseOrderAdd extends Component {
                                         {Array.isArray(this.state.arr)&&this.state.arr.map((item,i) => {
                                             return (
                                                 <tr key={i}>
-                                                    <td>{item.product_code + ' /  '  +  item.product_name}</td>
-                                                    <td>{item.mfg}</td>
-                                                    <td>{item.description}</td>
-                                                    <td>{item.packSize}</td>
-                                                    <td>{item.qty}</td>
-                                                    <td>{item.unit}</td>
-                                                    <td>{item.price}</td>
-                                                    <td>{item.discount}</td>
-                                                    <td>{item.line_amount_total}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.product_code + '   ' + item.product_name}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.mfg}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.description}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.packSize}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}> {item.qty}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.unit}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.price}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.discount}</td>
+                                                    <td onClick={this.poEdit.bind(this, item)}>{item.line_amount_total}</td>
                                                     <td align="center">
-                                                        <Button onClick={()=>this.handleRemove(i)} color='warning' size="sm">
+                                                        {item.msg ==='insert'?
+                                                        <Button onClick={()=>this.handleRemoveInsert(i)} color='warning' size="sm">
                                                             <i className="fa fa-remove"></i>
                                                         </Button>
+                                                        :
+                                                        <Button onClick={()=>this.handleRemove(i, item)} color='warning' size="sm">
+                                                            <i className="fa fa-remove"></i>
+                                                        </Button>
+                                                        }
+                                                        
                                                     </td>
                                                 </tr>
                                             )
@@ -651,67 +865,67 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Required Document" />:</Label><FormText className="help-block"><Lang name="Choose multiple" /></FormText></Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="commercialInvoice" value="Commercial Invoice" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.commercialInvoice} onChange={e=>this.handdlePatientToggleChange(e)} name="commercialInvoice"  />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Commercial Invoice" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="certHealth" value="Cert of Health" />
-                                            <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Cert of Health" /></Label>
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.certHealth} onChange={e=>this.handdlePatientToggleChange(e)} name="certHealth" value="Cert. of Health" />
+                                            <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Cert. of Health" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="shippingAdvice" value="Shipping Advice" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.shippingAdvice} onChange={e=>this.handdlePatientToggleChange(e)} name="shippingAdvice" value="Shipping Advice" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Shipping Advice" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingList" value="Packing List" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.packingList} onChange={e=>this.handdlePatientToggleChange(e)} name="packingList" value="Packing List" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packing List" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="certOrigin" value="Cert of Origin" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.certOrigin} onChange={e=>this.handdlePatientToggleChange(e)} name="certOrigin" value="Cert of Origin" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Cert of Origin" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="telexRelease" value="Telex release B/L" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.telexRelease} onChange={e=>this.handdlePatientToggleChange(e)} name="telexRelease" value="Telex release B/L" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Telex release B/L" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="coa" value="COA" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.coa} onChange={e=>this.handdlePatientToggleChange(e)} name="coa" value="COA" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="COA" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="formE" value="Form E" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.formE} onChange={e=>this.handdlePatientToggleChange(e)} name="formE" value="Form E" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Form E" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="originBL" value="Original B/L" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.originBL} onChange={e=>this.handdlePatientToggleChange(e)} name="originBL" value="Original B/L" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Original B/L" /></Label>
                                             </FormGroup>
                                         </Col>
                                         <Col md='2'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="insurance" value="Insurance" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.insurance} onChange={e=>this.handdlePatientToggleChange(e)} name="insurance" value="Insurance" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Insurance" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="formAI" value="Form AI" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.formAI} onChange={e=>this.handdlePatientToggleChange(e)} name="formAI" value="Form AI" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Form AI" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="awb" value="AWB" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.awb} onChange={e=>this.handdlePatientToggleChange(e)} name="awb" value="AWB" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="AWB" /></Label>
                                             </FormGroup>
                                         </Col>
                                     </FormGroup>
                                     <FormGroup row>
                                         <Col md="1"></Col>
-                                        <Col md="2"><Label><Lang name="Required Document Notes" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
+                                        <Col md="2"><Label><Lang name="Required Document Notes:" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="reqDocNote" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.reqDocNote} onChange={e=>this.handdlePatientToggleChange(e)} name="reqDocNote" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Step 1 Required Document Notes" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
@@ -730,11 +944,11 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Packing" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingOne" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.packingOne} onChange={e=>this.handdlePatientToggleChange(e)} name="packingOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packed in export standard packing with Thai Label" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="packingTwo" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.packingTwo} onChange={e=>this.handdlePatientToggleChange(e)} name="packingTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Packed in export standard packing and on every packing must be indicated" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
@@ -748,11 +962,11 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Sample" />:</Label><FormText className="help-block"><Lang name="Choose one" /></FormText></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="sampleOne" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.sampleOne} onChange={e=>this.handdlePatientToggleChange(e)} name="sampleOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Please include 20g sample to be ship along with the cargo(Please insert outside of the package)" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="sampleTwo" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.sampleTwo} onChange={e=>this.handdlePatientToggleChange(e)} name="sampleTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="No need Sample" /></Label>
                                             </FormGroup>
                                         </Col>
@@ -763,7 +977,7 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="Shipping Mark" />:</Label></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="shippingMark" value="Shipping Mark is BIC Chemical Co., Ltd." />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.shippingMark} onChange={e=>this.handdlePatientToggleChange(e)} name="shippingMark" value="Shipping Mark is BIC Chemical Co., Ltd." />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="Shipping Mark is BIC Chemical" /></Label>
                                             </FormGroup>
                                            
@@ -775,11 +989,11 @@ class PurchaseOrderAdd extends Component {
                                         <Col md="2"><Label><Lang name="CLAIM" />:</Label></Col>
                                         <Col md='9'>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="claimOne" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.claimOne} onChange={e=>this.handdlePatientToggleChange(e)} name="claimOne" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="In case of quality problem, claim should be lodged by the Buyers within 30 days after the arrival of the goods at the port of destination" /></Label>
                                             </FormGroup>
                                             <FormGroup check className="checkbox">
-                                            <Input className="form-check-input" type="checkbox" onChange={e=>this.logChange(e)} name="claimTwo" value="true" />
+                                            <Input className="form-check-input" type="checkbox" checked={this.state.data.claimTwo} onChange={e=>this.handdlePatientToggleChange(e)} name="claimTwo" value="true" />
                                             <Label check className="form-check-label" htmlFor="checkbox1"><Lang name="In case of quantity problem; claim should be lodged by the Buyer within 15 days after the arrival of the goods at the port of destination" /></Label>
                                             </FormGroup>
                                         </Col>
@@ -908,6 +1122,125 @@ class PurchaseOrderAdd extends Component {
                   </ModalFooter>
                 </Modal>
 
+
+
+
+
+
+
+
+
+
+
+                <Modal isOpen={this.state.edit} toggle={this.poEdit.bind(this)}
+                       className={'modal-lg modal-primary'}>
+                  <ModalHeader toggle={this.poEdit.bind(this)}><Lang name="Add / Edit Product" /> </ModalHeader>
+                  <ModalBody>
+                    
+                        <FormGroup row className="my-0">
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Manufacturer" /></Label>
+                                    <Input type="select" name="mfg" value={this.state.poline.mfg} onChange={e=>this.handleEditChange(e)} className="form-control">
+                                        <option value="">{this.state.Lang['--- select your Manufacturer ---']}</option> 
+                                        <option value="SINOPHARM WEIQIDA PHARMACEUTICAL CO., LTD.">SINOPHARM WEIQIDA PHARMACEUTICAL CO., LTD.</option>
+                                        <option value="HONGKONG TAIYIXIN INTERNATIONAL COMPANY LIMITED">HONGKONG TAIYIXIN INTERNATIONAL COMPANY LIMITED</option>
+                                        <option value="ARSHINE PHARMACEUTICAL CO.,LIMITED">ARSHINE PHARMACEUTICAL CO.,LIMITED</option>
+                                        <option value="G.N. CHEMICALS CO.,LTD">G.N. CHEMICALS CO.,LTD</option>
+                                        <option value="FIPHARM CO.LTD.">FIPHARM CO.LTD.</option>
+                                        <option value="ZHUHAI UNITED LABORATORIES TRADING ">ZHUHAI UNITED LABORATORIES TRADING </option>
+                                    </Input>
+                                </FormGroup>
+                            </Col>
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Qty" /></Label>
+                                    <Input type="number" name="qty" placeholder={this.state.Lang['Please enter your qty']} value={this.state.poline.qty} onChange={e=>this.handleEditChange(e)} className="form-control"/>
+                                </FormGroup>
+                            </Col>
+                        </FormGroup>
+                        <FormGroup row className="my-0">
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Product Name" /></Label>
+                                    <Input type="select" name="product_id" value={this.state.poline.product_id} onChange={e=>this.handleEditChange(e)} className="form-control" >
+                                        <option value="">{this.state.Lang['--- select your product name ---']}</option>
+                                        {Array.isArray(this.props.products.data) && this.props.products.data.filter(item => {
+                                                    return item.active === '1' || item.active === 1
+                                                })
+                                                
+                                                .map((item,i) => {
+                                                   return (
+                                                        <option value={item.id}>{'[' + item.code + ']' + ' -  ' +item.name}</option>
+                                                   )
+                                               })}
+                                    </Input>
+                                </FormGroup>
+                            </Col>
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Unit" /></Label>
+                                    <Input type="select" name="unit" value={this.state.poline.unit} onChange={e=>this.handleEditChange(e)}  className="form-control">
+                                        <option value="">{this.state.Lang['--- select your unit ---']}</option>
+                                        <option value='อัน'>อัน</option>
+                                        <option value='ก้อน'>ก้อน</option>
+                                        <option value='หลอด'>เม็ด</option>
+                                        <option value='กล่อง'>กล่อง</option>
+                                        <option value='ชิ้น'>ชิ้น</option>
+                                    </Input>
+                                </FormGroup>
+                            </Col>
+                        </FormGroup>
+
+                        <FormGroup row className="my-0">
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Description" /></Label>
+                                    <Input type="textarea" name="description" rows="3" placeholder={this.state.Lang['Please enter your description']} value={this.state.poline.description} onChange={e=>this.handleEditChange(e)}  className="form-control" />
+                                </FormGroup>
+                            </Col>
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Price/Unit" /></Label>
+                                    <Input type="number" name="price" value={this.state.poline.price} placeholder={this.state.Lang['Please enter your price']}  onChange={e=>this.handleEditChange(e)}  className="form-control" />
+                                </FormGroup>
+                            </Col>
+                        </FormGroup>
+                        <FormGroup row className="my-0">
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Pack size" /></Label>
+                                    <Input type="text" name="packSize" value={this.state.poline.packSize} placeholder={this.state.Lang['Please enter your pack size']} onChange={e=>this.handleEditChange(e)}  className="form-control" />
+                                </FormGroup>
+                            </Col>
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Discount" /></Label>
+                                    <Input type="number" name="discount" value={this.state.poline.discount} placeholder={this.state.Lang['Please enter your discount']} onChange={e=>this.handleEditChange(e)}  className="form-control" />
+                                </FormGroup>
+                            </Col>
+                        </FormGroup>
+                        <FormGroup row className="my-0">
+                            <Col xl='6'>
+                                
+                            </Col>
+                            <Col xl='6'>
+                                <FormGroup>
+                                    <Label><Lang name="Amount" /></Label>
+                                    <div style={{background: 'green',color: 'white', padding: 8}} > {this.sumTotalEdit()}</div>
+                                </FormGroup>
+                            </Col>
+                        </FormGroup>
+                    
+                  </ModalBody>
+                  <ModalFooter>
+                     
+                    <Button color="primary" onClick={()=>this.editAs()}> <Lang name="Submit" /> </Button> 
+                  
+                    <Button color="secondary" onClick={this.poEdit.bind(this)}><Lang name="Cancel" /></Button>
+                  </ModalFooter>
+                </Modal>
+
             </div>
 
             
@@ -916,12 +1249,13 @@ class PurchaseOrderAdd extends Component {
 }
 
 function mapStateToProps(state) {
+    console.log('edit',state)
     return {
         purchaseOrder: state.purchaseOrder,
         purchaseOrderLine: state.purchaseOrderLine,
-        partners: state.partners,
-        products: state.products
+        products: state.products,
+        partners: state.partners
     }
 }
 
-export default connect(mapStateToProps,{purchaseOrderAdd, partnerFetch, productFetch}) (PurchaseOrderAdd);
+export default connect(mapStateToProps, {partnerFetch,purchaseOrderLineFetch,productFetch,purchaseOrderLineUpdate, purchaseOrderLineDelete, purchaseOrderUpdate, purchaseOrderFetch, loadCompleted, loadProcessing})(PurchaseOrderEdit);

@@ -12,7 +12,7 @@ const ProductEdit = React.lazy(() => import('./views/Admin/Product/ProductEdit')
 const PurchaseOrder = React.lazy(() => import('./views/Admin/PurchaseOrder/PurchaseOrder'));
 const PurchaseOrderAdd = React.lazy(() => import("./views/Admin/PurchaseOrder/PurchaseOrderAdd"));
 const PurchaseOrderDetail = React.lazy(() => import("./views/Admin/PurchaseOrder/PurchaseOrderDetail"));
-const PurchaseOrderEdit = React.lazy(() => import("./views/Admin/PurchaseOrder/PurchaseOrderDetail"));
+const PurchaseOrderEdit = React.lazy(() => import("./views/Admin/PurchaseOrder/PurchaseOrderEdit"));
 
 const Partners = React.lazy(() => import("./views/Admin/Partner/Partners"));
 const PartnerAdd = React.lazy(() => import("./views/Admin/Partner/PartnerAdd"));

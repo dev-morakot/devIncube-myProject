@@ -250,8 +250,8 @@ import Swal from 'sweetalert2'
                                             <Input type="select" name="active"
                                                 value={this.state.data.active}
                                                 onChange={event => this.handleChange(event)}>
-                                                    <option value={true}>Yes</option>
-                                                    <option value={false}>No</option>
+                                                    <option value={'1'}>Yes</option>
+                                                    <option value={'0'}>No</option>
                                             </Input>
                                         </FormGroup>
                                     </Col>

@@ -5,7 +5,7 @@ import i18n from './../../../i18n';
 import _ from 'lodash';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { purchaseOrderFetch, loadCompleted , loadProcessing } from './../../../actions';
+import { purchaseOrderFetch, loadCompleted , loadProcessing , purchaseOrderLineFetch} from './../../../actions';
 import { formatDateTime } from './../../../lib/_functions';
 import Swal from 'sweetalert2';
 import logo from './../../../assets/img/brand/logo.svg'
@@ -110,6 +110,7 @@ class PurchaseOrderDetail extends Component {
         const id = this.state.id;
         if(_.findIndex(this.props.purchaseOrder.data, function(o) { return o[pkColumn] === id; })>=0) {
             this.setData(this.props.purchaseOrder.data[_.findIndex(this.props.purchaseOrder.data, function(o) { return o[pkColumn] === id })]);
+            this.props.purchaseOrderLineFetch(this.state.data.id);
         } else {
             this.props.purchaseOrderFetch();
         }
@@ -122,6 +123,7 @@ class PurchaseOrderDetail extends Component {
             const id = this.state.id;
             if(_.findIndex(nextProps.purchaseOrder.data, function(o) { return o[pkColumn] == id; })>=0){
                 this.setData(nextProps.purchaseOrder.data[_.findIndex(nextProps.purchaseOrder.data, function(o) { return o[pkColumn] == id;})]);
+                this.props.purchaseOrderLineFetch(this.state.data.id);
             }
         }
        
@@ -166,6 +168,7 @@ class PurchaseOrderDetail extends Component {
                             <div className="card-header-actions">
                             <Button type="button" onClick={this.printPdf.bind(this)}  color="success"><i className="fa fa-file-pdf-o"></i> <Lang name="Export PDF" /></Button>
                             {'  '}
+                            
                                 <Button onClick={this.toPurchaseEdit.bind(this)} color="primary"><Lang name="Edit" /></Button>{ '   ' }
 
                             </div>
@@ -216,7 +219,7 @@ class PurchaseOrderDetail extends Component {
                                 <Col xl='12'>  
                                     <h4><Lang name="Order Line" /></h4>
                                     <hr className="my-2" />
-                                    <Table responsive>
+                                    <Table responsive striped>
                                         <thead>
                                             <tr>
                                                 <th><Lang name="Product Code/Name" /></th>
@@ -232,9 +235,23 @@ class PurchaseOrderDetail extends Component {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-
-                                            </tr>
+                                            {Array.isArray(this.props.purchaseOrderLine.data) && this.props.purchaseOrderLine.data.map((item, i) => {
+                                               return(
+                                                <tr key={i}>
+                                                    <td>[{item.product_code}] - {item.product_name}</td>
+                                                    <td>{item.description}</td>
+                                                    <td>{item.mfg}</td>
+                                                    <td>{item.packSize}</td>
+                                                    <td>{item.qty}</td>
+                                                    <td>{item.unit}</td>
+                                                    <td>{item.price}</td>
+                                                    <td>{item.discount}</td>
+                                                    <td>{item.line_amount_total}</td>
+                                                </tr>
+                                               )
+                                               
+                                            })}
+                                           
                                         </tbody>
                                     </Table>
                                 </Col>
@@ -245,56 +262,60 @@ class PurchaseOrderDetail extends Component {
                                 <Col xl='6'>
                                     <h4><Lang name="Required Document"/> :</h4>
                                     <ul>
-                                        {this.state.data.commercialInvoice!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.commercialInvoice}</span>
+                                        {(this.state.data.commercialInvoice!=='-'&&this.state.data.commercialInvoice!==''&&this.state.data.commercialInvoice!=='null'&&this.state.data.commercialInvoice!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.commercialInvoice} /></span>
                                         }
                                         <br />
-                                        {this.state.data.certHealth!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.certHealth}</span>
+                                        {(this.state.data.certHealth!=='-'&&this.state.data.certHealth!==''&&this.state.data.certHealth!=='null'&&this.state.data.certHealth!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.certHealth} /> </span>
                                         }
                                         <br />
-                                        {this.state.data.shippingAdvice!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.shippingAdvice}</span>
+                                        {(this.state.data.shippingAdvice!=='-'&&this.state.data.shippingAdvice!==''&&this.state.data.shippingAdvice!=='null'&&this.state.data.shippingAdvice!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.shippingAdvice} /></span>
                                         }
                                         <br />
-                                        {this.state.data.packingList!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.packingList}</span>
+                                        {(this.state.data.packingList!=='-'&&this.state.data.packingList!==''&&this.state.data.packingList!=='null'&&this.state.data.packingList!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.packingList} /> </span>
                                         }
                                         <br />
-                                        {this.state.data.certOrigin!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.certOrigin}</span>
+                                        {(this.state.data.certOrigin!=='-'&&this.state.data.certOrigin!==''&&this.state.data.certOrigin!=='null'&&this.state.data.certOrigin!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.certOrigin} /> </span>
                                         }
                                         <br />
-                                        {this.state.data.coa!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.coa}</span>
+                                        {(this.state.data.coa!=='-'&&this.state.data.coa!==''&&this.state.data.coa!=='null'&&this.state.data.coa!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.coa} /></span>
                                         }
                                         <br />
-                                        {this.state.data.formE!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.formE}</span>
+                                        {(this.state.data.formE!=='-'&&this.state.data.formE!==''&&this.state.data.formE!=='null'&&this.state.data.formE!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.formE} /></span>
                                         }
                                         <br />
-                                        {this.state.data.originBL!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.originBL}</span>
+                                        {(this.state.data.originBL!=='-'&&this.state.data.originBL!==''&&this.state.data.originBL!=='null'&&this.state.data.originBL!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.originBL} /></span>
                                         }
                                         <br />
-                                        {this.state.data.insurance!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.insurance}</span>
+                                        {(this.state.data.insurance!=='-'&&this.state.data.insurance!==''&&this.state.data.insurance!=='null'&&this.state.data.insurance!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.insurance} /></span>
                                         }
                                         <br />
-                                        {this.state.data.formAI!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.formAI}</span>
+                                        {(this.state.data.formAI!=='-'&&this.state.data.formAI!==''&&this.state.data.formAI!=='null'&&this.state.data.formAI!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name= {this.state.data.formAI} /></span>
                                         }
                                         <br />
-                                        {this.state.data.awb!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.awb}</span>
+                                        {(this.state.data.awb!=='-'&&this.state.data.awb!==''&&this.state.data.awb!=='null'&&this.state.data.awb!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.awb} /></span>
                                         }
                                     </ul>
                                 </Col>
                                 <Col xl='6'>
                                     <h4><Lang name="Required Document Notes"/> :</h4>
                                     <ul>
-                                        {this.state.data.reqDocNote!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.reqDocNote}</span>
+                                        {(this.state.data.reqDocNote!=='-'&&this.state.data.reqDocNote!==''&&this.state.data.reqDocNote!==null&&this.state.data.reqDocNote!=='null')&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp;
+                                          <Lang name="Step 1 Required Document Notes" /> <br />
+                                           <Lang name="Step 2 Required Document Notes" /> <br />
+                                            <Lang name="Step 3 Required Document Notes" />
+                                        </span>
                                         }
                                     </ul>
                                 </Col>
@@ -305,24 +326,32 @@ class PurchaseOrderDetail extends Component {
                                 <Col xl='6'>
                                     <h4><Lang name="Packing"/> :</h4>
                                     <ul>
-                                    {this.state.data.packingOne!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.packingOne}</span>
+                                    {(this.state.data.packingOne!=='-'&&this.state.data.packingOne!==''&&this.state.data.packingOne!=='null'&&this.state.data.packingOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> 
+                                            &nbsp;
+                                            <Lang name="Packed in export standard packing with Thai Label" />
+                                        </span>
                                         }
                                         <br />
-                                        {this.state.data.packingTwo!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.packingTwo}</span>
+                                        {(this.state.data.packingTwo!=='-'&&this.state.data.packingTwo!==''&&this.state.data.packingTwo!=='null'&&this.state.data.packingTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp;
+                                               <Lang name="Packed in export standard packing and on every packing must be indicated" /> <br />
+                                                <Lang name="Packed other" />
+                                        </span>
                                         }
                                     </ul>
                                 </Col>
                                 <Col xl='6'>
                                     <h4><Lang name="Sample"/> :</h4>
                                     <ul>
-                                    {this.state.data.sampleOne!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.sampleOne}</span>
+                                    {(this.state.data.sampleOne!=='-'&&this.state.data.sampleOne!==''&&this.state.data.sampleOne!=='null'&&this.state.data.sampleOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" />  &nbsp;
+                                           <Lang name="Please include 20g sample to be ship along with the cargo(Please insert outside of the package)" />
+                                        </span>
                                         }
                                         <br />
-                                        {this.state.data.sampleTwo!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.sampleTwo}</span>
+                                        {(this.state.data.sampleTwo!=='-'&&this.state.data.sampleTwo!==''&&this.state.data.sampleTwo!=='null'&&this.state.data.sampleTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="No need Sample" /> </span>
                                         }
                                     </ul>
                                 </Col>
@@ -333,20 +362,20 @@ class PurchaseOrderDetail extends Component {
                                 <Col xl='6'>
                                     <h4><Lang name="Shipping Mark"/> :</h4>
                                     <ul>
-                                    {this.state.data.shippingMark!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.shippingMark}</span>
+                                    {(this.state.data.shippingMark!=='-'&&this.state.data.shippingMark!==''&&this.state.data.shippingMark!=='null'&this.state.data.shippingMark!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="Shipping Mark is BIC Chemical" /></span>
                                         }
                                     </ul>
                                 </Col>
                                 <Col xl='6'>
                                     <h4><Lang name="CLAIM"/> :</h4>
                                     <ul>
-                                    {this.state.data.claimOne!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.claimOne}</span>
+                                    {(this.state.data.claimOne!=='-'&&this.state.data.claimOne!==''&&this.state.data.claimOne!=='null'&&this.state.data.claimOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="In case of quality problem, claim should be lodged by the Buyers within 30 days after the arrival of the goods at the port of destination" /></span>
                                         }
                                         <br />
-                                        {this.state.data.claimTwo!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.claimTwo}</span>
+                                        {(this.state.data.claimTwo!=='-'&&this.state.data.claimTwo!==''&&this.state.data.claimTwo!=='null'&&this.state.data.claimTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; "><Lang name="In case of quantity problem; claim should be lodged by the Buyer within 15 days after the arrival of the goods at the port of destination" /></span>
                                         }
                                     </ul>
                                 </Col>
@@ -429,46 +458,62 @@ class PurchaseOrderDetail extends Component {
                     <hr className="my-2" />
                     <FormGroup row className="my-0">
                         <Col xl='6'>
-                            <strong>Supplier:</strong> <br />
+                            <strong><Lang name="supplier" /></strong> <br />
                             <span style={{fontSize: 11}}> {this.state.data.partner_address} </span><br />
-                            <span style={{fontSize: 11}}> <b>CONTACT PERSON:</b> {this.state.data.contactPerson}</span>
+                            <span style={{fontSize: 11}}> <b><Lang name="Contact Person" /></b> {this.state.data.contactPerson}</span>
                         </Col>
                         <Col xl='6'>
-                            <strong>Purchase Order:</strong><br />
+                            <strong><Lang name="Purchase Order" /></strong><br />
                             <span style={{fontSize: 11}}><b> P/O No.</b> {this.state.data.code} </span><br/>
-                            <span style={{fontSize: 11}}><b>Date:</b> {this.state.data.orderDate}</span> <br />
-                            <span style={{fontSize: 11}}><b>Payment Condition: </b> </span> <br />
+                            <span style={{fontSize: 11}}><b><Lang name="Order Date" /></b> {this.state.data.orderDate}</span> <br />
+                            <span style={{fontSize: 11}}><b><Lang name="Payment Condition" /></b> </span> <br />
                              <span style={{fontSize: 11}}>
                              {this.state.data.transportType} { ' , '}
                              {this.state.data.incotermVersion} { ' ,  ' }
                              {this.state.data.incoterms} {' , ' }
                              {this.state.data.destinationPort}
                              </span> <br />
-                             <span style={{fontSize: 11}}><b>Payment Terms:</b>  {this.state.data.paymentCondition} { ' , ' } {this.state.data.paymentTerms} </span> <br />
-                             <span style={{fontSize: 11}}><b>Price In::</b>  {this.state.data.currency}</span>
+                             <span style={{fontSize: 11}}><b><Lang name="Payment Terms" /></b>  {this.state.data.paymentCondition} { ' , ' } {this.state.data.paymentTerms} </span> <br />
+                             <span style={{fontSize: 11}}><b><Lang name="Currency" /></b>  {this.state.data.currency}</span>
                         </Col>
                     </FormGroup>
                     <br />
-                    <Table responsive>
+                    <Table style={{fontSize: 11}} responsive>
                         <thead>
                             <tr>
-                               <th>No.</th>
-                               <th>Description</th>
-                               <th>Pack Size</th>
-                               <th>Qty.</th>
-                               <th>Unit.</th>
-                               <th>Price/Unit</th>
-                               <th>Amount</th>
+                            <th><Lang name="Product Code/Name" /></th>
+                                                <th><Lang name="Description" /></th>
+                                                <th><Lang name="MFG BY" /></th>
+                                                <th><Lang name="Pack size" /></th>
+                                                <th><Lang name="Quantity" /></th>
+                                                <th><Lang name="Unit" /></th>
+                                                <th><Lang name="Price/Unit" /></th>
+                                                <th><Lang name="Discount Amount" /></th>
+                                                <th><Lang name="Total Amount" /></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-
-                            </tr>
+                        {Array.isArray(this.props.purchaseOrderLine.data) && this.props.purchaseOrderLine.data.map((item, i) => {
+                                               return(
+                                                <tr key={i}>
+                                                   
+                                                    <td>[{item.product_code}] - {item.product_name}</td>
+                                                    <td>{item.description}</td>
+                                                    <td>{item.mfg}</td>
+                                                    <td>{item.packSize}</td>
+                                                    <td>{item.qty}</td>
+                                                    <td>{item.unit}</td>
+                                                    <td>{item.price}</td>
+                                                    <td>{item.discount}</td>
+                                                    <td>{item.line_amount_total}</td>
+                                                </tr>
+                                               )
+                                               
+                                            })}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colSpan="6">Total Amount :</th>
+                                <th colSpan="8"><Lang name="Total Amount" /></th>
                                 <th>{this.state.data.amount_total}</th>
                             </tr>
                         </tfoot>
@@ -478,73 +523,164 @@ class PurchaseOrderDetail extends Component {
 
                     <FormGroup row className="my-0">
                         <Col xl='5'>
-                            <b>REQUIRED DOCUMENTS:</b>
+                            <b><Lang name="Required Document" />:</b>
                         </Col>
 
                     </FormGroup>
-                    <FormGroup row className="my-0">
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
                         <Col xl='3'>
-                        {this.state.data.commercialInvoice!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.commercialInvoice}</span>
+                        {(this.state.data.commercialInvoice!=='-'&&this.state.data.commercialInvoice!==''&&this.state.data.commercialInvoice!=='null'&&this.state.data.commercialInvoice!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.commercialInvoice} /></span>
                                         }
                         </Col>
                         <Col xl='3'>
-                        {this.state.data.certHealth!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.certHealth}</span>
+                        {(this.state.data.certHealth!=='-'&&this.state.data.certHealth!==''&&this.state.data.certHealth!=='null'&&this.state.data.certHealth!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.certHealth} /></span>
                                         }
                         </Col>
                         <Col xl='3'>
-                        {this.state.data.shippingAdvice!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.shippingAdvice}</span>
+                        {(this.state.data.shippingAdvice!=='-'&&this.state.data.shippingAdvice!==''&&this.state.data.shippingAdvice!=='null'&&this.state.data.shippingAdvice!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.shippingAdvice} /></span>
                                         }
                         </Col>
                         <Col xl='3'>
-                        {this.state.data.packingList!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.packingList}</span>
-                                        }
-                        </Col>
-                        
-                    </FormGroup>
-                    <FormGroup row className="my-0">
-                        <Col xl='3'>
-                        {this.state.data.certOrigin!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.certOrigin}</span>
-                                        }
-                        </Col>
-                        <Col xl='3'>
-                        {this.state.data.coa!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.coa}</span>
-                                        }
-                        </Col>
-                        <Col xl='3'>
-                        {this.state.data.formE!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.formE}</span>
-                                        }
-                        </Col>
-                        <Col xl='3'>
-                        {this.state.data.originBL!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.originBL}</span>
+                        {(this.state.data.packingList!=='-'&&this.state.data.packingList!==''&&this.state.data.packingList!=='null'&&this.state.data.packingList!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.packingList} /></span>
                                         }
                         </Col>
                         
                     </FormGroup>
-                    <FormGroup row className="my-0">
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
                         <Col xl='3'>
-                        {this.state.data.insurance!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.insurance}</span>
+                        {(this.state.data.certOrigin!=='-'&&this.state.data.certOrigin!==''&&this.state.data.certOrigin!=='null'&&this.state.data.certOrigin!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.certOrigin} /></span>
                                         }
                         </Col>
                         <Col xl='3'>
-                        {this.state.data.formAI!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.formAI}</span>
+                        {(this.state.data.coa!=='-'&&this.state.data.coa!==''&&this.state.data.coa!=='null'&&this.state.data.coa!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang nmae={this.state.data.coa} /></span>
                                         }
                         </Col>
                         <Col xl='3'>
-                        {this.state.data.awb!=='-'&&
-                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> {this.state.data.awb}</span>
+                        {(this.state.data.formE!=='-'&&this.state.data.formE!==''&&this.state.data.formE!=='null'&&this.state.data.formE!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.formE} /></span>
+                                        }
+                        </Col>
+                        <Col xl='3'>
+                        {(this.state.data.originBL!=='-'&&this.state.data.originBL!==''&&this.state.data.originBL!=='null'&&this.state.data.originBL!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.originBL} /></span>
+                                        }
+                        </Col>
+                        
+                    </FormGroup>
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xl='3'>
+                        {(this.state.data.insurance!=='-'&&this.state.data.insurance!==''&&this.state.data.insurance!=='null'&&this.state.data.insurance!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.insurance} /></span>
+                                        }
+                        </Col>
+                        <Col xl='3'>
+                        {(this.state.data.formAI!=='-'&&this.state.data.formAI!==''&&this.state.data.formAI!=='null'&&this.state.data.formAI!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang name={this.state.data.formAI} /></span>
+                                        }
+                        </Col>
+                        <Col xl='3'>
+                        {(this.state.data.awb!=='-'&&this.state.data.awb!==''&&this.state.data.awb!=='null'&&this.state.data.awb!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> <Lang nmae={this.state.data.awb} /></span>
                                         }
                         </Col>
                        
+                    </FormGroup>
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xl='12'>
+                        {(this.state.data.reqDocNote!=='-'&&this.state.data.reqDocNote!==''&&this.state.data.reqDocNote!==null&&this.state.data.reqDocNote!=='null')&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp;
+                                           <Lang name="Step 1 Required Document Notes" /> <br />
+                                           <Lang name="Step 2 Required Document Notes" /> <br />
+                                            <Lang name="Step 3 Required Document Notes" />
+                                        </span>
+                                        }
+                        </Col>
+                    </FormGroup>
+                    <br />
+                    <FormGroup  row className="my-0">
+                        <Col xl='5'>
+                            <b><Lang name="Packing" />:</b>
+                        </Col>
+
+                    </FormGroup>
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xs='12'>
+                        {(this.state.data.packingOne!=='-'&&this.state.data.packingOne!==''&&this.state.data.packingOne!=='null'&&this.state.data.packingOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> 
+                                            &nbsp;
+                                            <Lang name="Packed in export standard packing with Thai Label" />
+                                        </span>
+                                        }
+                                        <br />
+                                        {(this.state.data.packingTwo!=='-'&&this.state.data.packingTwo!==''&&this.state.data.packingTwo!=='null'&&this.state.data.packingTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp;
+                                               <Lang name="Packed in export standard packing and on every packing must be indicated" /> <br />
+                                                <Lang name="Packed other" />
+                                        </span>
+                                        }
+                        </Col>
+                    </FormGroup>
+
+                    <br />
+                    <FormGroup row className="my-0">
+                        <Col xl='5'>
+                            <b><Lang name="Sample" />:</b>
+                        </Col>
+
+                    </FormGroup>
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xs='12'>
+                        {(this.state.data.sampleOne!=='-'&&this.state.data.sampleOne!==''&&this.state.data.sampleOne!=='null'&&this.state.data.sampleOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" />  &nbsp;
+                                            <Lang name="Please include 20g sample to be ship along with the cargo(Please insert outside of the package)" />
+                                        </span>
+                                        }
+                                        <br />
+                                        {(this.state.data.sampleTwo!=='-'&&this.state.data.sampleTwo!==''&&this.state.data.sampleTwo!=='null'&&this.state.data.sampleTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="No need Sample" /> </span>
+                                        }
+                        </Col>
+                    </FormGroup>
+
+                    <br />
+                    <FormGroup row className="my-0">
+                        <Col xl='5'>
+                            <b> <Lang name="Shipping Mark" />:</b>
+                        </Col>
+
+                    </FormGroup>
+
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xs='12'>
+                        {(this.state.data.shippingMark!=='-'&&this.state.data.shippingMark!==''&&this.state.data.shippingMark!=='null'&this.state.data.shippingMark!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="Shipping Mark is BIC Chemical" /></span>
+                                        }
+                        </Col>
+                    </FormGroup>
+
+                    <br />
+                    <FormGroup row className="my-0">
+                        <Col xl='5'>
+                            <b><Lang name="CLAIM" />:</b>
+                        </Col>
+
+                    </FormGroup>
+                    <FormGroup style={{fontSize: 12}} row className="my-0">
+                        <Col xl='12'>
+                        {(this.state.data.claimOne!=='-'&&this.state.data.claimOne!==''&&this.state.data.claimOne!=='null'&&this.state.data.claimOne!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="In case of quality problem, claim should be lodged by the Buyers within 30 days after the arrival of the goods at the port of destination" /></span>
+                                        }
+                                        <br />
+                                        {(this.state.data.claimTwo!=='-'&&this.state.data.claimTwo!==''&&this.state.data.claimTwo!=='null'&&this.state.data.claimTwo!==null)&&
+                                        <span><i style={{color: 'green'}} className="fa fa-check-circle-o" /> &nbsp; <Lang name="In case of quantity problem; claim should be lodged by the Buyer within 15 days after the arrival of the goods at the port of destination" /></span>
+                                        }
+                        </Col>
                     </FormGroup>
                 </Col>
                 </Row>
@@ -556,8 +692,9 @@ class PurchaseOrderDetail extends Component {
 function mapStateToProps(state) {
     console.log(state);
     return {
-        purchaseOrder: state.purchaseOrder
+        purchaseOrder: state.purchaseOrder,
+        purchaseOrderLine: state.purchaseOrderLine
     }
 }
 
-export default connect(mapStateToProps, {purchaseOrderFetch, loadCompleted, loadProcessing})(PurchaseOrderDetail);
+export default connect(mapStateToProps, {purchaseOrderFetch,purchaseOrderLineFetch, loadCompleted, loadProcessing})(PurchaseOrderDetail);

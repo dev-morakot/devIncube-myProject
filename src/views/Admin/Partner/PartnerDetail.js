@@ -113,18 +113,7 @@ import Swal from 'sweetalert2';
 
     resultDelete(message) {
         this.setState({processType: ''});
-        if(_.has(message,'message')){
-          if(_.has(message,'message')){
-            Swal.fire({
-              type: 'error',
-              title: this.state.Lang['Delete Partner'],
-              text: message.message,
-              allowOutsideClick: false,
-              allowEscapeKey: false
-            });
-          }
-        } else {
-          Swal.fire({
+        Swal.fire({
             position: 'center',
             type: 'success',
             title: this.state.Lang['Delete success'],
@@ -137,7 +126,6 @@ import Swal from 'sweetalert2';
               this.backPage();
             }
           }); 
-        }
       }
 
 

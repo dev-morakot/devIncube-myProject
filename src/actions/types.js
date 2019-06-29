@@ -28,3 +28,9 @@ export const PURCHASE_ORDER_UPDATE_SUCCESS = "purchase_order_update_success";
 export const PURCHASE_ORDER_UPDATE_ERROR = "purchase_order_update_error";
 export const PURCHASE_ORDER_DELETE_SUCCESS = "purchase_order_delete_success";
 export const PURCHASE_ORDER_DELETE_ERROR = "purchase_order_delete_error";
+
+export const PURCHASE_ORDER_LINE_FETCH = "purchase_order_line_fetch";
+export const PURCHASE_ORDER_LINE_DELETE_SUCCESS = "purchase_order_line_delete_success";
+export const PURCHASE_ORDER_LINE_DELETE_ERROR = "purchase_order_line_delete_error";
+export const PURCHASE_ORDER_LINE_UPDATE_SUCCESS = "purchase_order_line_update_success";
+export const PURCHASE_ORDER_LINE_UPDATE_ERROR = "purchase_order_line_update_error";

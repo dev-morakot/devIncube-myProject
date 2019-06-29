@@ -27,8 +27,8 @@ class ProductAdd extends Component {
             productName: '',
             productCode: '',
             productPrice: '',
-            productUnit: '',
-            category: '',
+            productUnit: 'ชิ้น',
+            category: 'วัตถุดิบ-โรงงาน',
             active: '',
             processType: '',
             back: false
@@ -59,30 +59,11 @@ class ProductAdd extends Component {
     resultSaveProduct(data) {
         this.setState({processType: ''});
         console.log('error',data)
-       /* if(data.error){
-        if(_.has(data.message,'error')){
-            Swal.fire({
-            type: 'error',
-            title: this.state.Lang['Add Hospital'],
-           // text: data.message.error,
-            allowOutsideClick: false,
-            allowEscapeKey: false
-            });
-        } else {
-            Swal.fire({
-            type: 'error',
-            title: this.state.Lang['Add Hospital'],
-           // text: data.message.errors[0].msg,
-            allowOutsideClick: false,
-            allowEscapeKey: false
-            });
-        }
-        }else{
         Swal.fire({
             position: 'center',
             type: 'success',
-            title: this.state.Lang['Add Hospital'],
-            text: this.state.Lang['Add hospital success.'],
+            title: this.state.Lang['Add Product'],
+            text: this.state.Lang['Add product success.'],
             showConfirmButton: false,
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -91,7 +72,6 @@ class ProductAdd extends Component {
               this.backPage();
             }
         }); 
-        }*/
     }
 
     SaveAS = () => {
@@ -182,8 +162,7 @@ class ProductAdd extends Component {
                                                 <option value="อัน">อัน</option>
                                                 <option value="ถุง">ถุง</option>
                                                 <option value="เครื่อง">เครื่อง</option>
-                                                <option value="ชิ้น">ชิ้น</option>
-                                                <option value="ชิ้น">ชิ้น</option>
+                                    
                                                 <option value="กระปุก">กระปุก</option>
                                                 <option value="กล่อง" >กล่อง</option>
                                                 <option value="ขวด">ขวด</option>

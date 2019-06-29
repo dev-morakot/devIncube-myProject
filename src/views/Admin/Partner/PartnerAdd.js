@@ -76,31 +76,11 @@ import Swal from 'sweetalert2'
 
     resultPartner(data) {
         this.setState({processType: ''});
-        console.log('error',data)
-        if(data){
-        if(_.has(data,'message')){
-            Swal.fire({
-            type: 'error',
-            title: this.state.Lang['Add Hospital'],
-            text: data.message,
-            allowOutsideClick: false,
-            allowEscapeKey: false
-            });
-        } else {
-            Swal.fire({
-            type: 'error',
-            title: this.state.Lang['Add Hospital'],
-            text: data.message,
-            allowOutsideClick: false,
-            allowEscapeKey: false
-            });
-        }
-        }else{
         Swal.fire({
             position: 'center',
             type: 'success',
-            title: this.state.Lang['Add Hospital'],
-            text: this.state.Lang['Add hospital success.'],
+            title: this.state.Lang['Add Partner'],
+            text: this.state.Lang['Add partner success.'],
             showConfirmButton: false,
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -109,7 +89,6 @@ import Swal from 'sweetalert2'
               this.backPage();
             }
         }); 
-        }
     }
 
     backPage() {

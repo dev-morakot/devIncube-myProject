@@ -30,6 +30,7 @@ export const productFetch = () => {
 export const productAddItem = (product) => {
     return dispatch => {
       dispatch({type: LOAER_PROCESSING, playload: {loading: true, text: 'saving'}});
+     
       axios.post(BACKEND_ENDPOINT + '/api/product/create.php', product,apiHeader()).then(function (response) {
         axios.get(BACKEND_ENDPOINT + '/api/product/read.php',apiHeader()).then(function (res) {
           dispatch({type: PRODUCT_ADD_SUCCESS, playload: res.data});
